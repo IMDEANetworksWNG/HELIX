@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="Avocado (087bda0f-9cb5-4a7b-adbc-9364b4904245)" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="Avocado (087bda0f-9cb5-4a7b-adbc-9364b4904245)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.jb4Zix3qz1" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="Mantis (ea5765cc-ba70-4374-aef8-98bf455bdeec)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/MIMORPH_RT" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="Remote Host (6e32043e-7107-49fd-9f7e-291644a6cda9)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/MIMORPH_RT" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
