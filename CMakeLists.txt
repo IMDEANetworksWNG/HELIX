@@ -29,6 +29,7 @@ add_library(MIMORPH_RT
         lib/mimorph.cpp
         include/mimorph.h
         include/defines.h
+        lib/dpdk.cpp
 )
 add_executable(radio_example examples/radio_example.cpp)
 

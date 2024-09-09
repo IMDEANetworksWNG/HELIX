@@ -39,6 +39,16 @@ udp_transport::udp_transport(const char* _ip, int _control_port, int _data_port,
         perror("Error");
     }
 
+    val = 6;
+    if (setsockopt(socket_, SOL_SOCKET, SO_PRIORITY, &val, sizeof(val)) < 0) {
+        perror("Error");
+    }
+    val = 1;
+    if (setsockopt(socket_, SOL_SOCKET, SO_BUSY_POLL, &val, sizeof(val)) < 0) {
+        perror("Error");
+    }
+
+
     if (bind(socket_, (sockaddr*)&clientAddr, sizeof(clientAddr)) == -1) {
         std::cerr << "Error binding socket." << std::endl;
         exit(EXIT_FAILURE);

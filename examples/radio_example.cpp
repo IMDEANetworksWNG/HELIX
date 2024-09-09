@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <cmath>
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const int num_of_tx_bytes=1024*128;
@@ -18,8 +19,7 @@ void create_rand_bytes(int num_bytes, char* random_data){
 }
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
-    return  {{400,RFDC_DAC_TYPE,0,0,false},
-             {400,RFDC_DAC_TYPE,0,1,true}};
+    return  {{400,RFDC_DAC_TYPE,0,0,true}};
 }
 
 
@@ -69,7 +69,7 @@ int main() {
     stream_config.udp_rx_ifg=stream_config.udp_rx_mss/5;
 
     //set radio ifg and mss
-    stream_config.radio_tx_mss=(2^32*8)-1;
+    stream_config.radio_tx_mss=pow(2,32)*8-1;
     stream_config.radio_tx_ifg=0;
     radio.control->set_streaming_param(stream_config);
 
@@ -79,13 +79,13 @@ int main() {
     ofdm_config.CP1=400;
     ofdm_config.CP2=144;
     ofdm_config.NumOFDMSyms=14;
-    ofdm_config.N_RE=143;
+    ofdm_config.N_RE=145;
     ofdm_config.symPerSlot=ofdm_config.N_RE*12;
     ofdm_config.nullSC=2048-ofdm_config.symPerSlot;
     radio.control->set_ofdm_param(ofdm_config);
 
     mimorph::filter_str filter_config{};
-    filter_config.ifs=100e-6; //100 microseconds
+    filter_config.ifs=0; //100 microseconds
     filter_config.bw=BW_MODE_HIGH;
     radio.control->set_filter_param(filter_config);
 
@@ -93,11 +93,17 @@ int main() {
     std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
-    std::string filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.05.20/slotFR2_CH1_SP7.2_TX1.txt";
+    std::string filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.04/slotFR2_CH1_SP7.2_TX1.txt";
     std::vector<int16_t> tx_data=load_waveform_from_file(filename);
     
     // Trigger transmission of data
-    radio.stream->transmit(tx_data.data(),tx_data.size()*2);
+    while(1){
+        radio.stream->transmit(tx_data.data(),tx_data.size()*2);
+        usleep(100);
+    }
+
+    //radio.stream->transmit(tx_data.data(),tx_data.size()*2);
+
 
     return 1;
 }

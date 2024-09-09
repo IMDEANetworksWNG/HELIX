@@ -18,7 +18,7 @@ namespace mimorph {
     };
 
     struct stream_str {
-        uint32_t radio_tx_mss;
+        uint64_t radio_tx_mss;
         uint32_t radio_tx_ifg;
 
         uint32_t udp_rx_mss;
