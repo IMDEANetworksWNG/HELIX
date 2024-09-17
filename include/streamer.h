@@ -22,12 +22,16 @@ namespace mimorph {
             cmdManager(cmdManager){
         }
 
+        // temporary
+        bool triggerTX(ssize_t num_bytes);
+        bool triggerRX(ssize_t num_bytes);
+
     private:
         udp_transport* udp;
         cmd_manager* cmdManager;
 
-        bool triggerTX(ssize_t num_bytes);
-        bool triggerRX(ssize_t num_bytes);
+/*        bool triggerTX(ssize_t num_bytes);
+        bool triggerRX(ssize_t num_bytes);*/
 
     };
 

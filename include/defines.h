@@ -10,7 +10,7 @@
 #define UDP_DATA_PORT       10001
 #define UDP_CLIENT_PORT     12345
 
-#define STREAM_MANAGER_ADDR                     0xB0020000
+#define STREAM_MANAGER_ADDR                     0xB000A000
 #define CONTROL_REG_OFFSET                      0x0
 #define CONTROL_UDP_MSS_OFFSET                  0x4
 #define CONTROL_UDP_IFG_OFFSET                  0x8
@@ -19,17 +19,35 @@
 #define CONTROL_TX_RADIO_IFG_OFFSET             0x14
 #define CONTROL_TX_RADIO_TRANSFER_SIZE_OFFSET   0x18
 
-#define OFDM_MOD_ADDR                           0xB0021000
 
-#define TX_UPSAMPLING_ADDR                      0xB0022000
+//Transmitter blocks
+#define TX_OFDM_MOD_ADDR                           0xB000B000
+
+#define TX_UPSAMPLING_ADDR                      0xB000C000
 #define TX_IFS_OFFSET                           0x0
 #define TX_BW_OFFSET                            0x4
+
+//Receiver blocks
+#define RX_CFO_CORRECTION_ADDR  0xB0003000
+#define RX_CE_BLOCK_ADDR        0xB0002000
+#define RX_DEMAP_ADDR           0xB0004000
+#define RX_FILTER_ADDR          0xB0005000
+#define RX_EQ_ADDR              0xB0006000
+#define RX_OFDM_DEMOD_ADDR      0xB0007000
+#define RX_PTRS_BLOCK_ADDR      0xB0008000
+#define RX_SSB_ADDR             0xB0009000
+#define RX_LDCP_DECODER_ADDR    0xB0009000
 
 #define STREAM_MANAGER_DATA_WIDTH_BYTES   8
 
 #define TRIGGER_ACK   0x10
 
+#define OFDM_FFT_SIZE 2048
+#define NUM_SC_PER_RE 12
+
 #define SAMPLING_CLK_DAC 245.76e6
+#define SAMPLING_CLK_ADC 245.76e6
+#define SSR_ADC           2
 
 #define BW_MODE_HIGH 0
 #define BW_MODE_LOW 1

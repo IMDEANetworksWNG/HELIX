@@ -18,13 +18,6 @@ namespace mimorph {
             throw std::invalid_argument("Platform was not initialized");
         }
 
-        sched_param param{};
-        param.sched_priority = sched_get_priority_max(SCHED_FIFO);
-
-        // Set the scheduling policy to FIFO (Real-time)
-/*        if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
-            std::cerr << "Failed to set process priority: " << strerror(errno) << std::endl;
-        }*/
 
     }
 
