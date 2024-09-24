@@ -55,4 +55,10 @@
 #define RFDC_ADC_TYPE 0
 #define RFDC_DAC_TYPE 1
 
+#define MOD_BPSK    1
+#define MOD_QPSK    2
+#define MOD_16QAM   4
+#define MOD_64QAM   6
+#define MOD_256QAM  8
+
 #endif //MIMORPH_RT_DEFINES_H

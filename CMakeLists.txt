@@ -31,7 +31,9 @@ add_library(MIMORPH_RT
         include/defines.h
         lib/dpdk.cpp
 )
-add_executable(radio_example examples/radio_example.cpp)
+add_executable(radio_example examples/radio_example.cpp
+        lib/ldpc_configuration.cpp
+        include/ldpc_configuration.h)
 
 target_link_libraries(radio_example
         MIMORPH_RT)

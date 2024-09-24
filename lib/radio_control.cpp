@@ -37,9 +37,9 @@ void radio_control::set_tx_ofdm_param(ofdm_str params) {
     cmdManager->writeReg(TX_OFDM_MOD_ADDR+0x4,value);
 }
 
-void radio_control::set_tx_filter_param(filter_str params) {
-    cmdManager->writeReg(TX_UPSAMPLING_ADDR+TX_IFS_OFFSET,static_cast<uint32_t>(params.ifs*SAMPLING_CLK_DAC));
-    cmdManager->writeReg(TX_UPSAMPLING_ADDR+TX_BW_OFFSET,params.bw);
+void radio_control::set_tx_filter_param(bool bw, float ifs) {
+    cmdManager->writeReg(TX_UPSAMPLING_ADDR+TX_IFS_OFFSET,static_cast<uint32_t>(ifs*SAMPLING_CLK_DAC));
+    cmdManager->writeReg(TX_UPSAMPLING_ADDR+TX_BW_OFFSET,bw);
 }
 
 void radio_control::set_rx_cfo_correction_param(bool bw, bool enable, uint8_t scaling) {

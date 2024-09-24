@@ -64,7 +64,17 @@ namespace mimorph {
         uint16_t    SSB_index[2]; //beggining-end of the SSB block in terms of sc
     };
 
-
+    struct  radio_config_str{
+        bool                bw;
+        ptrs_str            phase_tracking;
+        dmrs_str            equalization;
+        ssb_sync_str        synchronization;
+        ofdm_str            ofdm;
+        uint16_t            tbs;
+        uint16_t            num_sch_sym;
+        float               ifs; //inter-frame spacing at tx
+        float               code_rate; //inter-frame spacing at tx
+    };
 
     class radio_control {
 
@@ -73,7 +83,7 @@ namespace mimorph {
         void set_freq_band( std::vector<converter_conf> config);
 
         void set_tx_ofdm_param(ofdm_str params);
-        void set_tx_filter_param(filter_str params);
+        void set_tx_filter_param(bool bw, float ifs);
 
         void set_rx_cfo_correction_param(bool bw, bool enable, uint8_t scaling);
         void set_rx_filter_param(bool bw);
@@ -83,18 +93,29 @@ namespace mimorph {
         void set_rx_eq_param(ofdm_str params);
         void set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, dmrs_str dmrs_params, ofdm_str ofdm_params);
         void set_rx_demap_param(uint16_t num_blocks);
+        //void set_rx_ldcp_param(ofdm_str params);
 
-        void set_rx_ldcp_param(ofdm_str params);
+        radio_config_str* get_radio_config(){
+            return &radio_config;
+        }
 
+/*        tx_configuration_str* get_tx_config(){
+            return &tx_configuration;
+        }*/
 
         explicit radio_control(cmd_manager* cmdManager):
-            cmdManager(cmdManager) {
+            cmdManager(cmdManager),
+            //tx_configuration(),
+            radio_config()
+            {
         }
 
         bool init_platform();
 
     private:
             cmd_manager* cmdManager;
+            radio_config_str radio_config;
+            //tx_configuration_str tx_configuration;
     };
 
 } // mimorph

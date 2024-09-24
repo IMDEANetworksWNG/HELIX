@@ -7,6 +7,8 @@
 #include <string>
 #include <cmath>
 
+#include "../include/ldpc_configuration.h"
+
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const int num_of_tx_bytes=1024*128;
 
@@ -47,82 +49,77 @@ std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
 }
 
 void configure_tx_blocks(mimorph::mimorph& radio, bool bw){
-    //configure OFDM mod and TX filter
-    mimorph::ofdm_str ofdm_config{};
-    ofdm_config.OFDM_Bypass=false;
-    ofdm_config.CP1=400;
-    ofdm_config.CP2=144;
-    ofdm_config.NumOFDMSyms=14;
-    ofdm_config.N_RE=145;
-    ofdm_config.num_sc=ofdm_config.N_RE*12;
-    ofdm_config.nullSC=2048-ofdm_config.num_sc;
-    radio.control->set_tx_ofdm_param(ofdm_config);
 
-    mimorph::filter_str filter_config{};
-    filter_config.ifs=0; //100 microseconds
-    filter_config.bw=bw;
-    radio.control->set_tx_filter_param(filter_config);
+    auto* radio_config=radio.control->get_radio_config();
+    radio_config->bw=bw;
+
+    //configure OFDM mod and TX filter
+    radio_config->ofdm.OFDM_Bypass=false;
+    radio_config->ofdm.CP1=400;
+    radio_config->ofdm.CP2=144;
+    radio_config->ofdm.NumOFDMSyms=14;
+    radio_config->ofdm.N_RE=145;
+    radio_config->ofdm.num_sc=radio_config->ofdm.N_RE*12;
+    radio_config->ofdm.nullSC=2048-radio_config->ofdm.num_sc;
+    radio.control->set_tx_ofdm_param(radio_config->ofdm);
+
+    radio_config->ifs=0;
+    radio.control->set_tx_filter_param(radio_config->bw,radio_config->ifs);
 }
 
 void configure_rx_blocks(mimorph::mimorph& radio, bool bw){
-    //cfo correction
-    radio.control->set_rx_cfo_correction_param(bw,false,2);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
 
-    //configure OFDM mod and TX filter
-    mimorph::ofdm_str ofdm_config{};
-    ofdm_config.OFDM_Bypass=false;
-    ofdm_config.CP1=400;
-    ofdm_config.CP2=144;
-    ofdm_config.NumOFDMSyms=14;
-    ofdm_config.N_RE=145;
-    ofdm_config.num_sc=ofdm_config.N_RE*12;
-    radio.control->set_rx_ofdm_param(ofdm_config);
+    auto* radio_config=radio.control->get_radio_config();
+    radio_config->bw=bw;
+
+    //cfo correction
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,0);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
+
+    radio.control->set_rx_ofdm_param(radio_config->ofdm);
 
     //filter configuration
-    radio.control->set_rx_filter_param(bw);
+    radio.control->set_rx_filter_param(radio_config->bw);
 
     //configure ssb block
-    mimorph::ssb_sync_str ssb_config{};
-    //ssb_config.ssb_sync=10447;//5403*2;//10447+75;
-    ssb_config.ssb_sync=10447;//5403*2;//10447+75;
-    ssb_config.slot_len=30944;// //30976
-    radio.control->set_rx_ssb_param(bw,ssb_config);
+    radio_config->synchronization.ssb_sync=10447;//5403*2;//10447+75;
+    radio_config->synchronization.slot_len=30944;// //30976
+    radio.control->set_rx_ssb_param(bw,radio_config->synchronization);
 
     //configure channel estimation block
-    mimorph::dmrs_str ce_config{};
-    ce_config.offset=0;
-    ce_config.scs=6;
-    ce_config.symbol_index=3;
-    ce_config.num_sc_virtual=(ofdm_config.num_sc+22); //this variable is adding 22 "virtual" sc to the sides
-    ce_config.inv_num_dmrs=56; // este valor habria que ponerlo mejor
-    ce_config.scaling_nVar=63; // este valor habria que ponerlo mejor
-    radio.control->set_rx_ce_param(ce_config);
+    radio_config->equalization.offset=0;
+    radio_config->equalization.scs=6;
+    radio_config->equalization.symbol_index=3;
+    radio_config->equalization.num_sc_virtual=(radio_config->ofdm.num_sc+22); //this variable is adding 22 "virtual" sc to the sides
+    radio_config->equalization.inv_num_dmrs=56; // este valor habria que ponerlo mejor
+    radio_config->equalization.scaling_nVar=63; // este valor habria que ponerlo mejor
+    radio.control->set_rx_ce_param(radio_config->equalization);
 
     //configure equalization block
-    radio.control->set_rx_eq_param(ofdm_config);
+    radio.control->set_rx_eq_param(radio_config->ofdm);
 
     //configure phase tracking block
-    mimorph::ptrs_str phase_tracking_config{};
-    phase_tracking_config.offset=0;
-    phase_tracking_config.scs=12*2; // este valor habria que ponerlo mejor
-    phase_tracking_config.even=false;
-    phase_tracking_config.SSB_index[0]=744;
-    phase_tracking_config.SSB_index[1]=996;
+    radio_config->phase_tracking.offset=0;
+    radio_config->phase_tracking.scs=12*2;
+    radio_config->phase_tracking.even=false;
+    radio_config->phase_tracking.SSB_index[0]=744;
+    radio_config->phase_tracking.SSB_index[1]=996;
 
-    phase_tracking_config.SSB_symbols[0]=9;
-    phase_tracking_config.SSB_symbols[1]=10;
-    phase_tracking_config.SSB_symbols[2]=11;
-    phase_tracking_config.SSB_symbols[3]=12;
-    radio.control->set_rx_phase_tracking_param(bw,phase_tracking_config,ce_config,ofdm_config);
+    radio_config->phase_tracking.SSB_symbols[0]=9;
+    radio_config->phase_tracking.SSB_symbols[1]=10;
+    radio_config->phase_tracking.SSB_symbols[2]=11;
+    radio_config->phase_tracking.SSB_symbols[3]=12;
+    radio.control->set_rx_phase_tracking_param(bw,radio_config->phase_tracking,radio_config->equalization,radio_config->ofdm);
 
     //configure demapper
-    uint16_t num_blocks=21867; //esto se puede mejorar (modulacion y numero slot length..)
-    radio.control->set_rx_demap_param(num_blocks);
+    radio_config->num_sch_sym=21867; //esto se puede mejorar (modulacion y numero slot length..) //21867
+    radio.control->set_rx_demap_param(radio_config->tbs);
 
     //configure ldpc decoder
-/*    uint16_t num_block=21867;
-    radio.control->set_rx_demap_param(num_blocks);*/
+    radio_config->tbs=21504;
+    radio_config->code_rate=490.0/1024;
+    auto ldpc_config = get_LDPC_config(radio_config->tbs, radio_config->code_rate,radio_config->num_sch_sym*2,MOD_QPSK);
 
+    usleep(10);
 }
 
 bool check_data(char* received_data, char* sent_data, int num_bytes){
