@@ -20,7 +20,7 @@
 
  */
 
-struct CBSInfo {
+struct cbs_info {
     int C;               // Number of code block segments
     int CBZ;             // Number of bits in each code block (excluding CB-CRC bits and filler bits)
     int Lcb;             // Number of parity bits in each code block
@@ -30,16 +30,34 @@ struct CBSInfo {
     std::vector<int> Z;  // Full lifting size set
 };
 
-struct BGNInfo {
+struct bgn_info {
     std::string CRC; // CRC polynomial
     int L;           // Number of parity bits
     int BGN;         // Base graph number
     int B;           // Payload size after CRC attachment
 };
 
+struct ldpc_regs{
+    uint16_t Kdm1=0;
+    std::vector<uint16_t> Em1;
+    uint16_t E_F1=0;
+    uint16_t E_F2=0;
+    uint16_t E_L1=0;
+    uint16_t E_L2=0;
+    uint16_t E_jump1=0;
+    uint16_t E_jump2=0;
+    uint16_t nPunctured=0;
+    uint16_t lastPunctured=0;
+    uint16_t Fm1=0;
+    uint16_t lastFillers=0;
+    std::vector<uint16_t> nZeros;
+    uint16_t lastZeros=0;
+    uint64_t ldpc_ctrl_regs=0;
+    uint16_t CM1=0;
+    uint16_t F_R=0;
+};
 
-
-struct LDPCInfo {
+struct ldpc_info {
     uint16_t Zc;
     uint16_t Kd;
     uint16_t F;
@@ -50,7 +68,11 @@ struct LDPCInfo {
     uint16_t modOrder;
     uint16_t maxIter;
     uint16_t bgn;
+    uint16_t ssr; //number of samples per cycle
+    ldpc_regs regs;
 };
+
+
 
 /*
 class ldpc_configuration {
@@ -58,6 +80,6 @@ class ldpc_configuration {
 };
 */
 
-LDPCInfo get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder);
+ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder);
 
 #endif //MIMORPH_RT_LDPC_CONFIGURATION_H

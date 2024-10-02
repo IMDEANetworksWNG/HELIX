@@ -4,6 +4,7 @@
 
 #include "../include/radio_control.h"
 #include "../include/defines.h"
+#include <cmath>
 
 namespace mimorph {
 
@@ -79,7 +80,7 @@ void radio_control::set_rx_eq_param(ofdm_str params) {
 }
 
 void radio_control::set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, dmrs_str dmrs_params, ofdm_str ofdm_params) {
-    uint32_t value = (dmrs_params.scs/SSR_ADC-dmrs_params.offset/SSR_ADC)-1 | (dmrs_params.scs/SSR_ADC-1)<<5 | dmrs_params.symbol_index<<10 | (ptrs_params.scs/SSR_ADC-ptrs_params.offset/SSR_ADC)<<15 |
+    uint32_t value = (dmrs_params.scs/SSR_ADC-dmrs_params.offset/SSR_ADC)-1 | (dmrs_params.scs/SSR_ADC-1)<<5 | dmrs_params.symbol_index<<10 | (ptrs_params.scs/SSR_ADC-1-ptrs_params.offset/SSR_ADC)<<15 |
             (ptrs_params.scs/SSR_ADC-1)<<20 | ptrs_params.even<<25 | ofdm_params.NumOFDMSyms<<26 | bw<<31;
     cmdManager->writeReg(RX_PTRS_BLOCK_ADDR,value);
 
@@ -91,9 +92,71 @@ void radio_control::set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, d
     cmdManager->writeReg(RX_PTRS_BLOCK_ADDR+0x8,value);
 }
 
-    void radio_control::set_rx_demap_param(uint16_t num_blocks) {
-        cmdManager->writeReg(RX_DEMAP_ADDR,num_blocks);
-    }
+void radio_control::set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order) {
+    cmdManager->writeReg(RX_DEMAP_ADDR,ceil((num_blocks*mod_order/4.0)));
+}
+
+void radio_control::set_rx_ldcp_param(ldpc_info params) {
+    uint32_t value= params.regs.Kdm1 |
+                    params.regs.Em1[0]<<11 |
+                    params.regs.Em1[1]<<22;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR,value);
+
+    value= params.regs.Em1[1] >> 10 |
+                    params.regs.Em1[2]<<1 |
+                    params.regs.Em1[3]<<12 |
+                    params.regs.Em1[4]<<23;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x4,value);
+
+    value= params.regs.Em1[4] >> 9 |
+           params.regs.Em1[5]<< 2 |
+           params.regs.E_F1<<13;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x8,value);
+
+    value= params.regs.E_F1 >> 19 |
+           params.regs.E_L1 << 5 |
+           params.regs.E_F2 << 29;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0xC,value);
+
+    value= params.regs.E_F2 >> 3 |
+           params.regs.E_L2 << 21;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x10,value);
+
+    value= params.regs.E_L2 >> 11 |
+           params.regs.E_jump1 << 13 |
+           params.regs.E_jump2 << 19 |
+           params.regs.nPunctured << 25;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x14,value);
+
+    value= params.regs.lastPunctured |
+            params.regs.Fm1 << 4 |
+           params.regs.lastFillers << 15 |
+           params.regs.nZeros[0] << 19 |
+           params.regs.nZeros[1] << 30 ;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x18,value);
+
+    value= params.regs.nZeros[1] >> 2 |
+           params.regs.nZeros[2] << 9 |
+           params.regs.nZeros[3] << 20 |
+           params.regs.nZeros[4] << 31 ;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x1C,value);
+
+    value= params.regs.nZeros[4] >> 1 |
+           params.regs.nZeros[5] << 10 |
+           params.regs.lastZeros << 21 ;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x20,value);
+
+    value= params.regs.lastZeros >> 11 |
+           params.regs.CM1 << 13 |
+           params.regs.ldpc_ctrl_regs << 16 ;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x24,value);
+
+    value= params.regs.ldpc_ctrl_regs >> 16 |
+           params.regs.F_R << 24;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x28,value);
+
+
+}
 
 
 bool radio_control::init_platform() {

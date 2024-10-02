@@ -6,6 +6,7 @@
 #define MIMORPH_RT_RADIO_CONTROL_H
 
 #include "cmd_manager.h"
+#include "ldpc_configuration.h"
 
 namespace mimorph {
 
@@ -72,6 +73,7 @@ namespace mimorph {
         ofdm_str            ofdm;
         uint16_t            tbs;
         uint16_t            num_sch_sym;
+        uint16_t            mod_order;
         float               ifs; //inter-frame spacing at tx
         float               code_rate; //inter-frame spacing at tx
     };
@@ -92,8 +94,8 @@ namespace mimorph {
         void set_rx_ce_param(dmrs_str params);
         void set_rx_eq_param(ofdm_str params);
         void set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, dmrs_str dmrs_params, ofdm_str ofdm_params);
-        void set_rx_demap_param(uint16_t num_blocks);
-        //void set_rx_ldcp_param(ofdm_str params);
+        void set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order);
+        void set_rx_ldcp_param(ldpc_info params);
 
         radio_config_str* get_radio_config(){
             return &radio_config;

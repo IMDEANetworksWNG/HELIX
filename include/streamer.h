@@ -8,6 +8,9 @@
 #include "udp_transport.h"
 #include "cmd_manager.h"
 
+#define NUMBER_OF_RETRIES 5
+
+
 namespace mimorph {
 
     class streamer { ;
@@ -29,9 +32,6 @@ namespace mimorph {
     private:
         udp_transport* udp;
         cmd_manager* cmdManager;
-
-/*        bool triggerTX(ssize_t num_bytes);
-        bool triggerRX(ssize_t num_bytes);*/
 
     };
 

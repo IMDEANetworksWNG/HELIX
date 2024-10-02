@@ -7,8 +7,8 @@
 #include <algorithm>
 
 
-BGNInfo getBGNInfo(int A, double R) {
-    BGNInfo info;
+bgn_info getBGNInfo(int A, double R) {
+    bgn_info info;
     int L;
     int bgn;
 
@@ -50,8 +50,8 @@ int findMinZc(const std::vector<int>& Zlist, int Kb, int Kd) {
 }
 
 // Function to get CBS information
-CBSInfo getCBSInfo(int B, int bgn) {
-    CBSInfo info;
+cbs_info getCBSInfo(int B, int bgn) {
+    cbs_info info;
     int Kcb, L, C, Bd, cbz, Kd, Kb, Zc, K;
 
     // Get the maximum code block size based on BGN
@@ -119,8 +119,8 @@ CBSInfo getCBSInfo(int B, int bgn) {
 }
 
 // Function to get SCH information
-LDPCInfo getSCHInfo(int tbs, double tcr) {
-    LDPCInfo info;
+ldpc_info getSCHInfo(int tbs, double tcr) {
+    ldpc_info info;
 
     // Input validation
     if (tbs < 0) {
@@ -131,10 +131,10 @@ LDPCInfo getSCHInfo(int tbs, double tcr) {
     }
 
     // Get base graph number and CRC information
-    BGNInfo bgInfo = getBGNInfo(tbs, tcr);
+    bgn_info bgInfo = getBGNInfo(tbs, tcr);
 
     // Get code block segment information
-    CBSInfo cbInfo = getCBSInfo(bgInfo.B, bgInfo.BGN);
+    cbs_info cbInfo = getCBSInfo(bgInfo.B, bgInfo.BGN);
 
     // Get number of bits (including filler bits) to be encoded by LDPC encoder
     int N;
@@ -166,7 +166,7 @@ LDPCInfo getSCHInfo(int tbs, double tcr) {
     return info;
 }
 
-std::vector<double> cbsRateRecover(const std::vector<double>& in, const LDPCInfo& cbsinfo, int k0, int Ncb, int Qm) {
+std::vector<double> cbsRateRecover(const std::vector<double>& in, const ldpc_info& cbsinfo, int k0, int Ncb, int Qm) {
     // Perform bit de-interleaving according to TS 38.212 5.4.2.2
     int E = in.size();
     std::vector<double> interleaved(E);
@@ -231,7 +231,7 @@ std::vector<double> cbsRateRecover(const std::vector<double>& in, const LDPCInfo
     }
 
     // Get base graph and code block segmentation parameters
-    LDPCInfo cbsinfo = getSCHInfo(trblklen, R);
+    ldpc_info cbsinfo = getSCHInfo(trblklen, R);
     int bgn = cbsinfo.bgn;
     int Zc = cbsinfo.Zc;
     int N = cbsinfo.N;
@@ -285,8 +285,8 @@ std::vector<double> cbsRateRecover(const std::vector<double>& in, const LDPCInfo
 
 
 
-LDPCInfo get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder) {
-    LDPCInfo ldpc_config;
+ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder) {
+    ldpc_info ldpc_config;
 
     if ((TargetCodeRate > 539.0/1024.0 && TargetCodeRate < 552.0/1024.0) || TargetCodeRate < 316.0/1024.0) {
         std::cerr << "FPGA_IP: LDPC TargetCodeRate must be greater than 316/1024, excluding from 539/1024 to 552/1024\n";
@@ -311,7 +311,7 @@ LDPCInfo get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder)
 
     ldpc_config.modOrder = modOrder;
     ldpc_config.maxIter = 10;
-    uint8_t SSR=16;
+    ldpc_config.ssr=16;
 
     std::vector<int> Kd_tranf(ldpc_config.C);
     std::vector<int> lastKd(ldpc_config.C);
@@ -325,65 +325,65 @@ LDPCInfo get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder)
     std::vector<int> jump2(ldpc_config.C);
 
     // Checking if the number of zeros is valid
-    if (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F < SSR + 1) {
+    if (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F < ldpc_config.ssr + 1) {
         std::cerr << "FPGA_IP: LDPC at the moment didn't consider codeword without zeros.";
     }
 
     // Determine Kd_tranf, lastKd and F_R
     int F_R;
     if (ldpc_config.Kd < ldpc_config.E[0] / ldpc_config.modOrder) {
-        Kd_tranf.assign(ldpc_config.C, std::ceil(ldpc_config.Kd / static_cast<double>(SSR)));
-        lastKd.assign(ldpc_config.C, ldpc_config.Kd % SSR == 0 ? SSR : ldpc_config.Kd % SSR);
+        Kd_tranf.assign(ldpc_config.C, std::ceil(ldpc_config.Kd / static_cast<double>(ldpc_config.ssr)));
+        lastKd.assign(ldpc_config.C, ldpc_config.Kd % ldpc_config.ssr == 0 ? ldpc_config.ssr : ldpc_config.Kd % ldpc_config.ssr);
         F_R = 1;
     } else {
-        Kd_tranf.assign(ldpc_config.C, std::ceil((ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) / static_cast<double>(SSR)));
-        lastKd.assign(ldpc_config.C, (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % SSR == 0 ? SSR : (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % SSR);
+        Kd_tranf.assign(ldpc_config.C, std::ceil((ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) / static_cast<double>(ldpc_config.ssr)));
+        lastKd.assign(ldpc_config.C, (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr);
         F_R = 0;
     }
 
     // Calculate E_tranf and lastE
     for (int i = 0; i < ldpc_config.C; i++) {
-        E_tranf[i] = std::ceil(ldpc_config.E[i] / static_cast<double>(SSR * ldpc_config.modOrder));
-        lastE[i] = (ldpc_config.E[i] / ldpc_config.modOrder) % SSR == 0 ? SSR : (ldpc_config.E[i] / ldpc_config.modOrder) % SSR;
+        E_tranf[i] = std::ceil(ldpc_config.E[i] / static_cast<double>(ldpc_config.ssr * ldpc_config.modOrder));
+        lastE[i] = (ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr;
     }
 
     // Set initial rF1 for first iteration
-    rF1[0] = SSR;
+    rF1[0] = ldpc_config.ssr;
 
     // Iterate over each code block
     for (int ii = 0; ii < ldpc_config.C; ii++) {
         // Last1 computation
-        if (rF1[ii] == SSR) {
+        if (rF1[ii] == ldpc_config.ssr) {
             rL1[ii] = lastKd[ii];
             jump2[ii] = 0;
         } else if (rF1[ii] == lastKd[ii]) {
-            rL1[ii] = SSR;
+            rL1[ii] = ldpc_config.ssr;
             jump2[ii] = 1;
         } else if (lastKd[ii] > rF1[ii]) {
             rL1[ii] = lastKd[ii] - rF1[ii];
             jump2[ii] = 0;
         } else if (lastKd[ii] < rF1[ii]) {
-            rL1[ii] = lastKd[ii] - rF1[ii] + SSR;
+            rL1[ii] = lastKd[ii] - rF1[ii] + ldpc_config.ssr;
             jump2[ii] = 1;
         } else {
             throw std::runtime_error("Case not considered!");
         }
 
         // First2 computation
-        rF2[ii] = rL1[ii] == SSR ? SSR : SSR - rL1[ii];
+        rF2[ii] = rL1[ii] == ldpc_config.ssr ? ldpc_config.ssr : ldpc_config.ssr - rL1[ii];
 
         // Last2 computation
-        if (rF1[ii] == SSR) {
+        if (rF1[ii] == ldpc_config.ssr) {
             rL2[ii] = lastE[ii];
             jump1[ii] = 0;
         } else if (rF1[ii] == lastE[ii]) {
-            rL2[ii] = SSR;
+            rL2[ii] = ldpc_config.ssr;
             jump1[ii] = 1;
         } else if (lastE[ii] > rF1[ii]) {
             rL2[ii] = lastE[ii] - rF1[ii];
             jump1[ii] = 0;
         } else if (lastE[ii] < rF1[ii]) {
-            rL2[ii] = lastE[ii] - rF1[ii] + SSR;
+            rL2[ii] = lastE[ii] - rF1[ii] + ldpc_config.ssr;
             jump1[ii] = 1;
         } else {
             throw std::runtime_error("Case not considered!");
@@ -391,19 +391,104 @@ LDPCInfo get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder)
 
         // Update rF1 for next iteration
         if (ii < ldpc_config.C - 1) {
-            rF1[ii + 1] = rL2[ii] == SSR ? SSR : SSR - rL2[ii];
+            rF1[ii + 1] = rL2[ii] == ldpc_config.ssr ? ldpc_config.ssr : ldpc_config.ssr - rL2[ii];
         }
     }
 
     // Calculate punctured, fillers, and zeros values
-    int lastPunctured = 2 * ldpc_config.Zc % SSR == 0 ? SSR : 2 * ldpc_config.Zc % SSR;
-    int lastFillers = ldpc_config.F % SSR == 0 ? SSR : ldpc_config.F % SSR;
-    int lastZeros = (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F) % SSR == 0 ? SSR : (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F) % SSR;
+    int lastPunctured = 2 * ldpc_config.Zc % ldpc_config.ssr == 0 ? ldpc_config.ssr : 2 * ldpc_config.Zc % ldpc_config.ssr;
+    int lastFillers = ldpc_config.F % ldpc_config.ssr == 0 ? ldpc_config.ssr : ldpc_config.F % ldpc_config.ssr;
+    int lastZeros = (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F) % ldpc_config.ssr;
 
     // Check if N is a multiple of SSR
-    if (ldpc_config.N % SSR != 0) {
+    if (ldpc_config.N % ldpc_config.ssr != 0) {
         std::cerr <<"FPGA_IP: LDPC N is not a multiplier or SSR factor.";
     }
+
+    ldpc_config.regs.Kdm1=(Kd_tranf[0]-1-1);
+
+    for (int i=0;i<ldpc_config.C;i++)
+    {
+        ldpc_config.regs.Em1.push_back((E_tranf[i]-1));
+        ldpc_config.regs.nZeros.push_back ((static_cast<int>(ceil(static_cast<double>(ldpc_config.N-ldpc_config.E[0]-ldpc_config.F)/ldpc_config.ssr))-1));
+
+        ldpc_config.regs.E_F1 |= (rF1[i]-1) <<(i*4);
+        ldpc_config.regs.E_F2 |= (rF2[i]-1) <<(i*4);
+        ldpc_config.regs.E_L1 |= (rL1[i]-1) <<(i*4);
+        ldpc_config.regs.E_L2 |= (rL2[i]-1) <<(i*4);
+        ldpc_config.regs.lastZeros |= (lastZeros-1) <<(i*4);
+
+        ldpc_config.regs.E_jump1 |= jump1[i] <<i;
+        ldpc_config.regs.E_jump2 |= jump2[i] <<i;
+
+    }
+    float temp =ldpc_config.ssr;
+    ldpc_config.regs.nPunctured=ceil(2.0*ldpc_config.Zc/ldpc_config.ssr)-1-1; //might be wrong.. check
+    ldpc_config.regs.lastPunctured=lastPunctured-1;
+    ldpc_config.regs.Fm1= ceil( static_cast<double>(ldpc_config.F)/ldpc_config.ssr)-1;
+    ldpc_config.regs.lastFillers= lastPunctured-1;
+    //
+
+    ldpc_config.regs.CM1= ldpc_config.C-1;
+    ldpc_config.regs.F_R= F_R;
+
+    /* ------------------------------------------------------------------------*/
+    std::vector<int> a = {2, 3, 5, 7, 9, 11, 13, 15};  // Equivalent of `a` in MATLAB
+    std::vector<int> z_j(8);                           // Equivalent of `z_j` in MATLAB
+
+    // Fill z_j with values [0, 1, ..., 7]
+    for (int i = 0; i < 8; i++) {
+        z_j[i] = i;
+    }
+
+    // Matrix z_mat will store the element-wise multiplication results
+    std::vector<std::vector<int>> z_mat(8, std::vector<int>(a.size()));
+
+    // Compute z_mat = 2.^z_j .* a (element-wise multiplication)
+    for (int i = 0; i < z_j.size(); i++) {
+        for (int j = 0; j < a.size(); j++) {
+            z_mat[i][j] = static_cast<int>(std::pow(2, z_j[i]) * a[j]);
+        }
+    }
+
+    // Find where z_mat is equal to Zc (equivalent of `find(z_mat == IP_LDPC.Zc)`)
+    std::vector<int> indY;
+    std::vector<int> indX;
+
+    for (int i = 0; i < z_mat.size(); i++) {
+        for (int j = 0; j < z_mat[i].size(); j++) {
+            if (z_mat[i][j] == ldpc_config.Zc) {
+                indY.push_back(i);  // MATLAB find gives 1-based index, we keep it 0-based in C++
+                indX.push_back(j);  // Same here
+            }
+        }
+    }
+
+    // Compute a_sel and z_j_sel (equivalent of `a_sel = indX-1` and `z_j_sel = z_j(indY)`)
+    std::vector<int> a_sel(indX.size());
+    std::vector<int> z_j_sel(indY.size());
+
+    for (int i = 0; i < indX.size(); i++) {
+        a_sel[i] = indX[i];          // a_sel = indX - 1 (0-based in C++)
+        z_j_sel[i] = z_j[indY[i]];   // z_j_sel = z_j(indY)
+    }
+
+    /* ------------------------------------------------------------------------*/
+
+    // Filling the crtl registers of the IP block
+    ldpc_config.regs.ldpc_ctrl_regs=z_j_sel[0]
+                                    | a_sel[0]<<3
+                                    | (ldpc_config.bgn-1)<<6 // base graph number
+                                    | 12<<9 //Normalization value
+                                    | 0 <<13 //reserved
+                                    | 1 <<14 //0: Soft output; 1: hard output
+                                    | 0 <<15 //Output systematic values and parity
+                                    | 1 <<16  // Early termination because of passing parity
+                                    | 0 <<17 // Early termination because of no change
+                                    | ldpc_config.maxIter <<18 //  LDPC max decoding iterations
+                                    |  0<<24 // ID
+                                    | static_cast<uint64_t>((ldpc_config.N+2*ldpc_config.Zc-ldpc_config.K)/ldpc_config.Zc)<<32 //mb
+                                    | static_cast<uint64_t>(0)<<38; //max schedule
 
 
     return ldpc_config;

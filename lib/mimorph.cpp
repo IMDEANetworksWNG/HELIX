@@ -14,6 +14,7 @@ namespace mimorph {
         stream = new streamer(udp, cmd);
         control= new radio_control(cmd);
 
+        //This command will reset the TX and RX blocks
         if(!control->init_platform()){
             throw std::invalid_argument("Platform was not initialized");
         }

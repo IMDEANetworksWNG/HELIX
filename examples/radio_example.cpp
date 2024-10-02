@@ -12,12 +12,47 @@
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const int num_of_tx_bytes=1024*128;
 
-void create_rand_bytes(int num_bytes, char* random_data){
-
-    srand(static_cast<unsigned>(time(nullptr)));
-    for (int i = 0; i < num_bytes; ++i) {
-        random_data[i] = static_cast<char>(rand() % 256);
+bool check_data(uint8_t * received_data, uint8_t* sent_data, int num_bytes){
+    // Check if the echoed data matches the original data
+    if (memcmp(received_data, sent_data, num_bytes) == 0) {
+        //std::cout << "Data echoed correctly!" << std::endl;
+        return true;
+    } else {
+        //std::cout << "Data mismatch!" << std::endl;
+        return false;
     }
+}
+
+std::vector<uint8_t> convertToBytes(const std::vector<int16_t>& input) {
+    std::vector<uint8_t> output;
+    size_t size = input.size();
+
+    // Ensure the input size is divisible by 8, as we're packing 8 int16 values into one byte
+    if (size % 8 != 0) {
+        std::cerr << "Input size must be a multiple of 8." << std::endl;
+        return output;
+    }
+
+    // Process the input 8 bits at a time
+    for (size_t i = 0; i < size; i += 8) {
+        uint8_t byte = 0;
+
+        // Pack 8 bits (0 or 1) into one byte
+        for (int bit = 0; bit < 8; ++bit) {
+            // Ensure that the int16 value is either 0 or 1
+            if (input[i + bit] != 0 && input[i + bit] != 1) {
+                std::cerr << "Input values must be binary (0 or 1)." << std::endl;
+                return std::vector<uint8_t>();  // Return empty if input is invalid
+            }
+
+            // Shift and add the bit to the byte
+            byte |= (input[i + bit] & 1) << (bit);  // Highest bit first
+        }
+
+        output.push_back(byte);  // Store the packed byte
+    }
+
+    return output;
 }
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
@@ -73,7 +108,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw){
     radio_config->bw=bw;
 
     //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,0);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,2);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
 
     radio.control->set_rx_ofdm_param(radio_config->ofdm);
 
@@ -111,13 +146,16 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw){
     radio.control->set_rx_phase_tracking_param(bw,radio_config->phase_tracking,radio_config->equalization,radio_config->ofdm);
 
     //configure demapper
-    radio_config->num_sch_sym=21867; //esto se puede mejorar (modulacion y numero slot length..) //21867
-    radio.control->set_rx_demap_param(radio_config->tbs);
+    radio_config->num_sch_sym=21867;
+    radio_config->mod_order = MOD_QPSK;
+    radio.control->set_rx_demap_param(radio_config->num_sch_sym, radio_config->mod_order);
 
     //configure ldpc decoder
     radio_config->tbs=21504;
     radio_config->code_rate=490.0/1024;
     auto ldpc_config = get_LDPC_config(radio_config->tbs, radio_config->code_rate,radio_config->num_sch_sym*2,MOD_QPSK);
+    radio.control->set_rx_ldcp_param(ldpc_config);
+
 
     usleep(10);
 }
@@ -160,7 +198,7 @@ int main() {
     mimorph::stream_str stream_config{};
 
     //set udp ifg and mss
-    stream_config.udp_rx_mss=1024*2;
+    stream_config.udp_rx_mss=1024*8;
     stream_config.udp_rx_ifg=stream_config.udp_rx_mss/5;
 
     //set radio ifg and mss
@@ -175,17 +213,37 @@ int main() {
     std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
-    std::string filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.16/slotFR2_CH1_SP7.2_TX1.txt";
+    std::string filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.24/slotFR2_CH1_SP7.2_TX1.txt";
     std::vector<int16_t> tx_data=load_waveform_from_file(filename);
-    
-    // Trigger transmission of data
 
-    radio.stream->triggerRX(tx_data.size()*2);
+    filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.24/tx_bits.txt";
+    std::vector<int16_t> tx_bits=load_waveform_from_file(filename);
+    std::vector<uint8_t> tx_bytes=convertToBytes(tx_bits);
 
-    for(int i=0;i<1000;i++){
-      radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-      usleep(100);
-  }
+    std::vector<uint8_t> rx_data;
+    int num_of_rx_bytes=2904;
+    int n_errors=0;
+    int n_packets=100000;
+
+    for(int i=0;i<n_packets;i++){
+        uint8_t received_data[num_of_tx_bytes];
+        memset(received_data,0,num_of_tx_bytes);
+        radio.stream->transmit(tx_data.data(),tx_data.size()*2);
+        //usleep(10);
+        radio.stream->receive(received_data,num_of_rx_bytes);
+
+        rx_data.insert(rx_data.begin(),received_data,received_data+897);
+        rx_data.insert(rx_data.begin()+897,received_data+968,received_data+968+897);
+        rx_data.insert(rx_data.begin()+897*2,received_data+968*2,received_data+(968*2)+897);
+
+        if(!check_data(rx_data.data(),tx_bytes.data(),rx_data.size()-8))
+            n_errors++;
+
+        usleep(30);
+        rx_data.clear();
+    }
+
+    std::cout << "Number of packet with errors: " << n_errors << "/" << n_packets;
 
     return 1;
 }

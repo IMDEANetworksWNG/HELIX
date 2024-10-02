@@ -63,11 +63,6 @@ void udp_transport::send(void* data, ssize_t num_bytes, bool isdata) {
     }
     else{serverAddr.sin_port = htons(control_port);}
 
-    // Send the random data to the server
-/*
-    ssize_t sent_bytes = sendto(socket_, data, num_bytes, 0,
-                                (sockaddr*)(&serverAddr), sizeof(serverAddr));
-*/
     auto* ptr=(uint8_t*)data;
     size_t bytes_sent = 0;
     while (bytes_sent < num_bytes) {
@@ -75,15 +70,13 @@ void udp_transport::send(void* data, ssize_t num_bytes, bool isdata) {
         ssize_t sent = sendto(socket_, ptr + bytes_sent, chunk_size, 0, (sockaddr*)(&serverAddr), sizeof(serverAddr));
         if (sent == -1) {
             perror("sendto failed");
-            exit(EXIT_FAILURE);
+            return;
         }
         bytes_sent += sent;
     }
     if (bytes_sent == -1) {
         perror("Error sending data");
-        close(socket_);
         return;
-        //exit(EXIT_FAILURE);
     }
 
 }
@@ -107,9 +100,7 @@ void udp_transport::recv(void* data, ssize_t num_bytes, bool isdata) {
                                           (sockaddr*)(&serverAddr), &server_addr_len);
         if (received_bytes == -1) {
             perror("Error receiving data");
-            close(socket_);
             return;
-            //exit(EXIT_FAILURE);
         }
         totalReceived+= received_bytes;
     }
