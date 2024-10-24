@@ -16,7 +16,8 @@ namespace mimorph {
 
         //This command will reset the TX and RX blocks
         if(!control->init_platform()){
-            throw std::invalid_argument("Platform was not initialized");
+            std::cerr <<"Platform is not available";
+            exit(0);
         }
 
 

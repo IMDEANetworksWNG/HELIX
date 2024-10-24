@@ -38,9 +38,39 @@ void radio_control::set_tx_ofdm_param(ofdm_str params) {
     cmdManager->writeReg(TX_OFDM_MOD_ADDR+0x4,value);
 }
 
+    void radio_control::set_tx_lbm_param(uint32_t size){
+        int lookupTable[8] = {6, 0, 0, 2, 2, 4, 4, 6};
+        int rem_samples = lookupTable[size%8];
+        uint32_t value= (size/16) | (rem_samples)<<16;
+        cmdManager->writeReg(TX_LBM_ADDR,value);
+    }
+
+    void radio_control::set_tx_buildGrid_param(ofdm_str ofdm_params, ptrs_str ptrs_params, dmrs_str dmrs_params, uint16_t offsetSSB){
+
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,false); //First configure the block and after enable the block
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x10,dmrs_params.symbol_index-1); // Tx support more than one DMRS symbol in the slot. But Rx support only one.
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x18,dmrs_params.symbol_index-1); // Repeat the symbol if there is only one DM-RS in the slot
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x20,ptrs_params.SSB_symbols[0]-1-1); //First symbol with SSB -2
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x28,ptrs_params.SSB_symbols[3]); //Last symbol with SSB
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x30,ofdm_params.num_sc-2-2); //Number of used subcarriers in the OFDM symbol
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x38,ofdm_params.NumOFDMSyms-1); //Number of OFDM symbols in the slot -1
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x40,dmrs_params.scs/2-1);
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x48,dmrs_params.offset); //Location of the first DMRS subcarrier in the slot
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x50,ptrs_params.offset); //Location of the first PTRS subcarrier in the slot (FIXED)
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x58,ptrs_params.SSB_index[0]-2);
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x60,ptrs_params.SSB_index[1]);
+        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,true);
+}
+
+    void radio_control::set_tx_nrPDSCH(uint16_t mod_order, uint32_t num_bits, uint32_t left_bits){
+        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x10,mod_order);
+        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x18,num_bits/64);
+        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x20,left_bits);
+    }
+
 void radio_control::set_tx_filter_param(bool bw, float ifs) {
-    cmdManager->writeReg(TX_UPSAMPLING_ADDR+TX_IFS_OFFSET,static_cast<uint32_t>(ifs*SAMPLING_CLK_DAC));
-    cmdManager->writeReg(TX_UPSAMPLING_ADDR+TX_BW_OFFSET,bw);
+    cmdManager->writeReg(TX_UPSAMPLING_ADDR,static_cast<uint32_t>(ifs*SAMPLING_CLK_DAC));
+    cmdManager->writeReg(TX_UPSAMPLING_ADDR+0x4,bw);
 }
 
 void radio_control::set_rx_cfo_correction_param(bool bw, bool enable, uint8_t scaling) {
@@ -158,6 +188,20 @@ void radio_control::set_rx_ldcp_param(ldpc_info params) {
 
 }
 
+void radio_control::set_tx_split_config(uint8_t split){
+    cmd_struct cmd_str;
+    cmd_str.cmd="changeTXsplit ";
+    cmd_str.cmdArgs.push_back(std::to_string(split));
+    cmdManager->sendCmd(cmd_str,false);
+}
+
+void radio_control::set_rx_split_config(uint8_t split){
+    cmd_struct cmd_str;
+    cmd_str.cmd="changeRXsplit ";
+    cmd_str.cmdArgs.push_back(std::to_string(split));
+    cmdManager->sendCmd(cmd_str,false);
+}
+
 
 bool radio_control::init_platform() {
     cmd_struct cmd;
@@ -166,7 +210,7 @@ bool radio_control::init_platform() {
     version = cmdManager->sendCmd(cmd, true);
 
     if(!version){
-        std::cout << "Platform unavailable";
+        //std::cout << "Platform unavailable";
         return false;
     }
     std::cout << "Connected to platform with version: " << (char *) &version << "\n";

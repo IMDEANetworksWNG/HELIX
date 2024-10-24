@@ -20,19 +20,18 @@ namespace mimorph {
 
         void receive(void *data, ssize_t num_bytes);
 
+        bool load_SSB_data(void *data, ssize_t num_bytes);
+
         streamer(udp_transport* udp, cmd_manager* cmdManager):
             udp(udp),
             cmdManager(cmdManager){
         }
 
-        // temporary
-        bool triggerTX(ssize_t num_bytes);
-        bool triggerRX(ssize_t num_bytes);
-
     private:
         udp_transport* udp;
         cmd_manager* cmdManager;
-
+        bool triggerTX(ssize_t num_bytes);
+        bool triggerRX(ssize_t num_bytes);
     };
 
 } // mimorph

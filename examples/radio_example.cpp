@@ -6,8 +6,8 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <chrono>
 
-#include "../include/ldpc_configuration.h"
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const int num_of_tx_bytes=1024*128;
@@ -57,7 +57,28 @@ std::vector<uint8_t> convertToBytes(const std::vector<int16_t>& input) {
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
-             {400,RFDC_ADC_TYPE,0,0,true}};
+             {-400,RFDC_ADC_TYPE,2,0,true}};
+}
+
+void writeBinaryFile(const std::string &filename, const std::vector<uint8_t> &data) {
+    // Create a binary file output stream
+    std::ofstream file(filename, std::ios::binary);
+
+    // Check if the file opened successfully
+    if (!file.is_open()) {
+        std::cerr << "Could not open the file for writing!" << std::endl;
+        return;
+    }
+
+    // Write the data to the binary file
+    for (int value : data) {
+        file.write(reinterpret_cast<const char*>(&value), sizeof(value));
+    }
+
+    // Close the file
+    file.close();
+
+    std::cout << "Data written to " << filename << std::endl;
 }
 
 
@@ -65,7 +86,7 @@ std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error opening file" << std::endl;
-        return {};
+        exit(0);
     }
 
     std::vector<int16_t> values;
@@ -83,12 +104,46 @@ std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
     return values;
 }
 
-void configure_tx_blocks(mimorph::mimorph& radio, bool bw){
+void remove_ldpc_padding(std::vector<uint8_t>& rx_data){
+    //Removing the padding from the LDPC decoder
+    rx_data.insert(rx_data.begin(),rx_data.data(),rx_data.data()+897);
+    rx_data.insert(rx_data.begin()+897,rx_data.data()+968,rx_data.data()+968+897);
+    rx_data.insert(rx_data.begin()+897*2,rx_data.data()+968*2,rx_data.data()+(968*2)+897);
+}
+
+void configure_tx_blocks(mimorph::mimorph& radio, bool bw, uint8_t tx_split){
+
+    auto* radio_config=radio.control->get_radio_config();
+    radio_config->bw=bw;
+    radio_config->tx_split=tx_split;
+    radio.control->set_tx_split_config(radio_config->tx_split);
+
+    radio.control->set_tx_buildGrid_param(radio_config->ofdm,radio_config->phase_tracking,radio_config->equalization, radio_config->offsetSSB);
+    //Load SSB data into the memory
+    std::string filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.08/slotFR2_CH1_SSB_TX1.txt";
+    std::vector<int16_t> tx_data = load_waveform_from_file(filename);
+    radio.control->set_tx_lbm_param(tx_data.size());
+    radio.stream->load_SSB_data(tx_data.data(),tx_data.size() * 2);
+
+    radio.control->set_tx_ofdm_param(radio_config->ofdm);
+
+    radio_config->ifs=0;
+    radio.control->set_tx_filter_param(radio_config->bw,radio_config->ifs);
+
+    radio.control->set_tx_nrPDSCH(radio_config->mod_order,radio_config->num_sch_sym*2+42,22);
+}
+
+void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
 
     auto* radio_config=radio.control->get_radio_config();
     radio_config->bw=bw;
 
-    //configure OFDM mod and TX filter
+    radio_config->rx_split=rx_split;
+    radio.control->set_rx_split_config(radio_config->rx_split);
+
+    //cfo correction
+   radio.control->set_rx_cfo_correction_param(radio_config->bw,true,1);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
+
     radio_config->ofdm.OFDM_Bypass=false;
     radio_config->ofdm.CP1=400;
     radio_config->ofdm.CP2=144;
@@ -96,28 +151,19 @@ void configure_tx_blocks(mimorph::mimorph& radio, bool bw){
     radio_config->ofdm.N_RE=145;
     radio_config->ofdm.num_sc=radio_config->ofdm.N_RE*12;
     radio_config->ofdm.nullSC=2048-radio_config->ofdm.num_sc;
-    radio.control->set_tx_ofdm_param(radio_config->ofdm);
-
-    radio_config->ifs=0;
-    radio.control->set_tx_filter_param(radio_config->bw,radio_config->ifs);
-}
-
-void configure_rx_blocks(mimorph::mimorph& radio, bool bw){
-
-    auto* radio_config=radio.control->get_radio_config();
-    radio_config->bw=bw;
-
-    //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,2);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
-
     radio.control->set_rx_ofdm_param(radio_config->ofdm);
+
+    if ((radio_config->ofdm.num_sc/12) % 2 == 0)
+        radio_config->offsetSSB = 0;
+    else
+        radio_config->offsetSSB = 6;
 
     //filter configuration
     radio.control->set_rx_filter_param(radio_config->bw);
 
     //configure ssb block
     radio_config->synchronization.ssb_sync=10447;//5403*2;//10447+75;
-    radio_config->synchronization.slot_len=30944;// //30976
+    radio_config->synchronization.slot_len=30944;//30944 //30976
     radio.control->set_rx_ssb_param(bw,radio_config->synchronization);
 
     //configure channel estimation block
@@ -160,17 +206,6 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw){
     usleep(10);
 }
 
-bool check_data(char* received_data, char* sent_data, int num_bytes){
-    // Check if the echoed data matches the original data
-    if (memcmp(received_data, sent_data, num_bytes) == 0) {
-        std::cout << "Data echoed correctly!" << std::endl;
-        return true;
-    } else {
-        std::cout << "Data mismatch!" << std::endl;
-        return false;
-    }
-}
-
 void set_scheduler_options(){
     cpu_set_t mask;
     CPU_ZERO(&mask);
@@ -197,6 +232,9 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
+    uint8_t tx_split=SPLIT_7;
+    uint8_t rx_split=SPLIT_6;
+
     //set udp ifg and mss
     stream_config.udp_rx_mss=1024*8;
     stream_config.udp_rx_ifg=stream_config.udp_rx_mss/5;
@@ -206,44 +244,72 @@ int main() {
     stream_config.radio_tx_ifg=0;
     radio.control->set_streaming_param(stream_config);
 
-    configure_tx_blocks(radio,BW_MODE_HIGH);
-    configure_rx_blocks(radio,BW_MODE_HIGH);
+    configure_rx_blocks(radio,BW_MODE_HIGH,rx_split);
+    configure_tx_blocks(radio,BW_MODE_HIGH,tx_split);
 
     //Set the frequency bands of the different converters
     std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
-    std::string filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.24/slotFR2_CH1_SP7.2_TX1.txt";
-    std::vector<int16_t> tx_data=load_waveform_from_file(filename);
+    //Load data to send
+    std::string filename;
+    switch(tx_split){
+        case SPLIT_7:
+            filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.15/slotFR2_CH1_SP7_TX1.txt";
+            break;
+        case SPLIT_7_1: //este paquete tenia un padding de 0s que hacia que no funcionase
+            filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.08/slotFR2_CH1_7.1_TX1.txt";
+            break;
+        case SPLIT_7_2:
+            filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.15/slotFR2_CH1_SP7.2_TX1.txt";
+            break;
+        case SPLIT_8:
+            filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.15/slotFR2_CH1_SP8_TX1.txt";
+            break;
+        default:
+            filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.15/slotFR2_CH1_SP7_TX1.txt";
+    }
 
-    filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.24/tx_bits.txt";
-    std::vector<int16_t> tx_bits=load_waveform_from_file(filename);
-    std::vector<uint8_t> tx_bytes=convertToBytes(tx_bits);
+    std::vector<int16_t> tx_data=load_waveform_from_file(filename);
+    std::vector<uint8_t> tx_bytes;
+    if(rx_split==SPLIT_6){
+        filename = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.09.24/tx_bits.txt";
+        std::vector<int16_t> tx_bits=load_waveform_from_file(filename);
+        tx_bytes=convertToBytes(tx_bits);
+    }
 
     std::vector<uint8_t> rx_data;
     int num_of_rx_bytes=2904;
+    rx_data.resize(num_of_rx_bytes);
+    rx_data.clear();
+
     int n_errors=0;
-    int n_packets=100000;
+    int n_packets=100;
+    usleep(10000);
+
+    std::cout << "Starting experiment: " << std::endl;
 
     for(int i=0;i<n_packets;i++){
-        uint8_t received_data[num_of_tx_bytes];
-        memset(received_data,0,num_of_tx_bytes);
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        //usleep(10);
-        radio.stream->receive(received_data,num_of_rx_bytes);
+        radio.stream->receive(rx_data.data(),num_of_rx_bytes);
 
-        rx_data.insert(rx_data.begin(),received_data,received_data+897);
-        rx_data.insert(rx_data.begin()+897,received_data+968,received_data+968+897);
-        rx_data.insert(rx_data.begin()+897*2,received_data+968*2,received_data+(968*2)+897);
-
-        if(!check_data(rx_data.data(),tx_bytes.data(),rx_data.size()-8))
-            n_errors++;
+        if(rx_split==SPLIT_6){
+            remove_ldpc_padding(rx_data);
+            if(!check_data(rx_data.data(),tx_bytes.data(),tx_bytes.size())){
+                n_errors++;
+                std::cout << "Packet number " << i+1 << " failed" << std::endl;
+            }
+        }
+        else{
+            std::string rx_packet_fn = "Packet_n " + std::to_string(i) + "_Split" + std::to_string(rx_split);
+            writeBinaryFile(rx_packet_fn,rx_data);
+        }
 
         usleep(30);
         rx_data.clear();
     }
 
-    std::cout << "Number of packet with errors: " << n_errors << "/" << n_packets;
+    std::cout << "Number of packet with errors: " << n_errors << "/" << n_packets << std::endl;
 
     return 1;
 }

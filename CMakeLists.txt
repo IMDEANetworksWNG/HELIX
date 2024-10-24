@@ -35,5 +35,11 @@ add_executable(radio_example examples/radio_example.cpp
         lib/ldpc_configuration.cpp
         include/ldpc_configuration.h)
 
+add_executable(sinewave_example examples/sinewave_example.cpp)
+
 target_link_libraries(radio_example
         MIMORPH_RT)
+
+target_link_libraries(sinewave_example
+        MIMORPH_RT)
+

@@ -30,7 +30,7 @@ udp_transport::udp_transport(const char* _ip, int _control_port, int _data_port,
     //Timeout for the socket (100ms)
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = 100000;
+    tv.tv_usec = 10000; //10
     if (setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
         perror("Error");
     }

@@ -21,11 +21,11 @@
 
 
 //Transmitter blocks
-#define TX_OFDM_MOD_ADDR                           0xB000B000
-
+#define TX_OFDM_MOD_ADDR                        0xB000B000
 #define TX_UPSAMPLING_ADDR                      0xB000C000
-#define TX_IFS_OFFSET                           0x0
-#define TX_BW_OFFSET                            0x4
+#define TX_LBM_ADDR                             0xB0012000
+#define TX_NR_PDSCH_ADDR                        0xB000E000
+#define TX_BUILD_GRID_ADDR                      0xB000F000
 
 //Receiver blocks
 #define RX_CFO_CORRECTION_ADDR  0xB0003000
@@ -39,8 +39,6 @@
 #define RX_LDCP_DECODER_ADDR    0xB000D000 //0xB000D000
 
 #define STREAM_MANAGER_DATA_WIDTH_BYTES   8
-
-#define TRIGGER_ACK   0x10
 
 #define OFDM_FFT_SIZE 2048
 #define NUM_SC_PER_RE 12
@@ -60,5 +58,14 @@
 #define MOD_16QAM   4
 #define MOD_64QAM   6
 #define MOD_256QAM  8
+
+#define UDP_CMD_ACK 	16
+#define UDP_CMD_FAILED  3
+
+#define SPLIT_6 	1
+#define SPLIT_7 	2
+#define SPLIT_7_1 	3
+#define SPLIT_7_2 	4
+#define SPLIT_8	 	5
 
 #endif //MIMORPH_RT_DEFINES_H
