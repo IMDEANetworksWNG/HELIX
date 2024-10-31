@@ -8,6 +8,7 @@
 #define UDP_STACK_ADDR      0xB0000000
 #define UDP_CONTROL_PORT    10000
 #define UDP_DATA_PORT       10001
+#define UDP_METADATA_PORT      10002
 #define UDP_CLIENT_PORT     12345
 
 #define STREAM_MANAGER_ADDR                     0xB000A000

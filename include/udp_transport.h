@@ -20,8 +20,8 @@ namespace mimorph{
     class udp_transport {
 
     public:
-        void send(void *data, ssize_t num_bytes,bool isdata);
-        void recv(void *data, ssize_t num_bytes, bool isdata);
+        void send(void *data, ssize_t num_bytes,int port);
+        ssize_t recv(void *data, ssize_t num_bytes, int port);
 
         udp_transport(const char* _ip, int _control_port, int _data_port, int client_port);
 

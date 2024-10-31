@@ -6,11 +6,9 @@
 #include <vector>
 #include <string>
 #include <cmath>
-#include <chrono>
 
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const int num_of_tx_bytes=1024*128;
 
 bool check_data(uint8_t * received_data, uint8_t* sent_data, int num_bytes){
     // Check if the echoed data matches the original data
@@ -62,6 +60,9 @@ std::vector<mimorph::converter_conf> create_conv_conf(){
 
 void writeBinaryFile(const std::string &filename, const std::vector<uint8_t> &data) {
     // Create a binary file output stream
+    if(data.empty())
+        return;
+
     std::ofstream file(filename, std::ios::binary);
 
     // Check if the file opened successfully
@@ -72,7 +73,7 @@ void writeBinaryFile(const std::string &filename, const std::vector<uint8_t> &da
 
     // Write the data to the binary file
     for (int value : data) {
-        file.write(reinterpret_cast<const char*>(&value), sizeof(value));
+        file.write(reinterpret_cast<const char*>(&value), 1);
     }
 
     // Close the file
@@ -104,11 +105,13 @@ std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
     return values;
 }
 
-void remove_ldpc_padding(std::vector<uint8_t>& rx_data){
+void remove_ldpc_padding(std::vector<uint8_t>* rx_data){
     //Removing the padding from the LDPC decoder
-    rx_data.insert(rx_data.begin(),rx_data.data(),rx_data.data()+897);
-    rx_data.insert(rx_data.begin()+897,rx_data.data()+968,rx_data.data()+968+897);
-    rx_data.insert(rx_data.begin()+897*2,rx_data.data()+968*2,rx_data.data()+(968*2)+897);
+    uint8_t * ptr = rx_data->data();
+    rx_data->clear();
+    rx_data->insert(rx_data->begin(),ptr,ptr+897);
+    rx_data->insert(rx_data->end(),ptr+968,ptr+968+897);
+    rx_data->insert(rx_data->end(),ptr+968*2,ptr+(968*2)+897);
 }
 
 void configure_tx_blocks(mimorph::mimorph& radio, bool bw, uint8_t tx_split){
@@ -126,7 +129,7 @@ void configure_tx_blocks(mimorph::mimorph& radio, bool bw, uint8_t tx_split){
     radio.stream->load_SSB_data(tx_data.data(),tx_data.size() * 2);
 
     radio.control->set_tx_ofdm_param(radio_config->ofdm);
-
+    radio.control->set_tx_ofdm_param(radio_config->ofdm);
     radio_config->ifs=0;
     radio.control->set_tx_filter_param(radio_config->bw,radio_config->ifs);
 
@@ -237,7 +240,7 @@ int main() {
 
     //set udp ifg and mss
     stream_config.udp_rx_mss=1024*8;
-    stream_config.udp_rx_ifg=stream_config.udp_rx_mss/5;
+    stream_config.udp_rx_ifg=stream_config.udp_rx_mss/10;
 
     //set radio ifg and mss
     stream_config.radio_tx_mss=pow(2,32)*8-1;
@@ -277,38 +280,58 @@ int main() {
         std::vector<int16_t> tx_bits=load_waveform_from_file(filename);
         tx_bytes=convertToBytes(tx_bits);
     }
+    int num_of_rx_bytes;
+    switch(rx_split){
+        case SPLIT_6:
+            num_of_rx_bytes=2904;
+            break;
+        case SPLIT_7:
+            num_of_rx_bytes=45544*2;
+            break;
+        case SPLIT_7_1:
+            num_of_rx_bytes=45544*2;
+            break;
+        case SPLIT_7_2:
+            num_of_rx_bytes=97440;
+            break;
+        case SPLIT_8:
+            num_of_rx_bytes=127872;
+            break;
+        default:
+            num_of_rx_bytes=2904;
+    }
 
-    std::vector<uint8_t> rx_data;
-    int num_of_rx_bytes=2904;
-    rx_data.resize(num_of_rx_bytes);
-    rx_data.clear();
+    auto* radio_config=radio.control->get_radio_config();
+    mimorph::slot_str rx_data(num_of_rx_bytes,radio_config->ofdm.num_sc*4);
 
     int n_errors=0;
-    int n_packets=100;
+    int n_packets=10;
     usleep(10000);
 
     std::cout << "Starting experiment: " << std::endl;
 
     for(int i=0;i<n_packets;i++){
+
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        radio.stream->receive(rx_data.data(),num_of_rx_bytes);
+        radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);
 
         if(rx_split==SPLIT_6){
-            remove_ldpc_padding(rx_data);
-            if(!check_data(rx_data.data(),tx_bytes.data(),tx_bytes.size())){
+            remove_ldpc_padding(&rx_data.data);
+            if(!check_data(rx_data.data.data(),tx_bytes.data(),tx_bytes.size())){
                 n_errors++;
                 std::cout << "Packet number " << i+1 << " failed" << std::endl;
             }
         }
         else{
-            std::string rx_packet_fn = "Packet_n " + std::to_string(i) + "_Split" + std::to_string(rx_split);
-            writeBinaryFile(rx_packet_fn,rx_data);
+            std::string rx_packet_fn = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/CAPTURED_DATA/MIMORPH_RT/Packet_" + std::to_string(i) + "_Split8.bin";
+            writeBinaryFile(rx_packet_fn,rx_data.data);
         }
 
         usleep(30);
-        rx_data.clear();
+        rx_data.data.clear();
     }
 
+    if(rx_split==SPLIT_6)
     std::cout << "Number of packet with errors: " << n_errors << "/" << n_packets << std::endl;
 
     return 1;

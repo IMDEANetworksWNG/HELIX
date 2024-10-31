@@ -3,6 +3,7 @@
 //
 
 #include "../include/cmd_manager.h"
+#include "../include/defines.h"
 
 using namespace mimorph;
 
@@ -27,12 +28,12 @@ uint32_t cmd_manager::sendCmd(const cmd_struct& data, bool itHasReply) {
     }
     message += " \n";
 
-    udp->send((void*)message.c_str(),message.size(),false);
+    udp->send((void*)message.c_str(),message.size(),UDP_CONTROL_PORT);
 
     if(itHasReply){
         char reply[4];
         memset(reply,0,4);
-        udp->recv((void*)reply,sizeof(reply),false);
+        udp->recv((void*)reply,sizeof(reply),UDP_CONTROL_PORT);
         return *(uint32_t *)reply;
     }
     return 0;

@@ -57,11 +57,12 @@ udp_transport::udp_transport(const char* _ip, int _control_port, int _data_port,
 
 }
 
-void udp_transport::send(void* data, ssize_t num_bytes, bool isdata) {
-    if(isdata){
+void udp_transport::send(void* data, ssize_t num_bytes, int port) {
+/*    if(isdata){
         serverAddr.sin_port = htons(data_port);
     }
-    else{serverAddr.sin_port = htons(control_port);}
+    else{serverAddr.sin_port = htons(control_port);}*/
+    serverAddr.sin_port = htons(port);
 
     auto* ptr=(uint8_t*)data;
     size_t bytes_sent = 0;
@@ -81,18 +82,15 @@ void udp_transport::send(void* data, ssize_t num_bytes, bool isdata) {
 
 }
 
-void udp_transport::recv(void* data, ssize_t num_bytes, bool isdata) {
-    if(isdata){
-        serverAddr.sin_port = htons(data_port);
-    }
-    else{serverAddr.sin_port = htons(control_port);}
+ssize_t udp_transport::recv(void* data, ssize_t num_bytes, int port) {
+    serverAddr.sin_port = htons(port);
 
     ssize_t totalReceived = 0;
     ssize_t received_bytes=0;
 
     auto* ptr=(uint8_t*)data;
     socklen_t server_addr_len = sizeof(serverAddr);
-    //TO DO: design a timeout
+
     while (totalReceived < num_bytes){
         ptr+=received_bytes;
 
@@ -100,10 +98,10 @@ void udp_transport::recv(void* data, ssize_t num_bytes, bool isdata) {
                                           (sockaddr*)(&serverAddr), &server_addr_len);
         if (received_bytes == -1) {
             perror("Error receiving data");
-            return;
+            return totalReceived;
         }
         totalReceived+= received_bytes;
     }
-
+    return totalReceived;
 }
 
