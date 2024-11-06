@@ -49,13 +49,14 @@ namespace mimorph {
         return true;
     }
 
-    bool streamer::triggerRX(ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable){
+    bool streamer::triggerRX(ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable,int num_slots){
         cmd_struct cmd_str;
         cmd_str.cmd="triggerRX ";
         cmd_str.cmdArgs.push_back(std::to_string(num_bytes));
         cmd_str.cmdArgs.push_back(std::to_string(ce_enable));
         cmd_str.cmdArgs.push_back(std::to_string(energy_enable));
         cmd_str.cmdArgs.push_back(std::to_string(cfo_enable));
+        cmd_str.cmdArgs.push_back(std::to_string(num_slots));
 
         if(cmdManager->sendCmd(cmd_str,true)!=UDP_CMD_ACK){
             STREAM_DEBUG_PRINT("STREAMER_DEBUG: RX trigger wasn't set succesfully\n");
@@ -92,11 +93,23 @@ namespace mimorph {
         }
     }
 
+    void streamer::transmit(const std::vector<std::vector<int16_t>>& data, ssize_t num_bytes_per_slot){
+        ssize_t total_bytes=data.size()*num_bytes_per_slot;
+        if(triggerTX(total_bytes)){
+            for (auto slot : data) {
+                udp->data_socket.send(slot.data(),num_bytes_per_slot);
+                usleep(5);
+            }
+            return;
+        }
+    }
+
 void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable) {
-    if(triggerRX(num_bytes, ce_enable, energy_enable, cfo_enable)){
+    if(triggerRX(num_bytes, ce_enable, energy_enable, cfo_enable,1)){
         ssize_t recv_bytes=udp->data_socket.recv(slot->data.data(),num_bytes);
         if(recv_bytes<num_bytes)
             STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+        slot->data.resize(recv_bytes);
         if(ce_enable | energy_enable | cfo_enable){
             unpack_metadata(slot,ce_enable,energy_enable,cfo_enable);
         }
@@ -104,13 +117,20 @@ void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool e
     }
 }
 
-/*    void streamer::receive_multiple_slots(std::vector<slot_str> slots, ssize_t num_bytes_per_slot, bool ce_enable, bool energy_enable, bool cfo_enable) {
-        if(triggerRX(num_bytes_per_slot, ce_enable, energy_enable, cfo_enable)){
-            ssize_t recv_bytes=udp->recv(data,num_bytes,true);
-            if(recv_bytes<num_bytes)
-                std::cout << "Less bytes received than expected:" << recv_bytes << " bytes\n";
-            return;
+void streamer::receive(std::vector<slot_str>* slot_burst, ssize_t num_bytes_per_slot, bool ce_enable, bool energy_enable, bool cfo_enable) {
+    ssize_t total_bytes=slot_burst->size()*num_bytes_per_slot;
+    if(triggerRX(total_bytes, ce_enable, energy_enable, cfo_enable,slot_burst->size())){
+        for (auto& slot : *slot_burst){
+            ssize_t recv_bytes=udp->data_socket.recv(slot.data.data(),num_bytes_per_slot);
+            if(recv_bytes<num_bytes_per_slot)
+                    STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+            slot.data.resize(recv_bytes);
+            if(ce_enable | energy_enable | cfo_enable){
+                unpack_metadata(&slot, ce_enable, energy_enable, cfo_enable);
+            }
         }
-    }*/
+        return;
+    }
+}
 
 } // mimorph

@@ -30,6 +30,8 @@ add_library(MIMORPH_RT
         include/mimorph.h
         include/defines.h
         lib/dpdk.cpp
+        include/ldpc_configuration.h
+        lib/ldpc_configuration.cpp
 )
 add_executable(radio_example examples/radio_example.cpp
         lib/ldpc_configuration.cpp
@@ -43,3 +45,10 @@ target_link_libraries(radio_example
 target_link_libraries(sinewave_example
         MIMORPH_RT)
 
+add_executable(throughput_experiments examples/throughput_experiment_tx.cpp)
+
+target_link_libraries(sinewave_example
+        MIMORPH_RT)
+
+target_link_libraries(throughput_experiments
+        MIMORPH_RT)
