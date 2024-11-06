@@ -28,12 +28,12 @@ uint32_t cmd_manager::sendCmd(const cmd_struct& data, bool itHasReply) {
     }
     message += " \n";
 
-    udp->send((void*)message.c_str(),message.size(),UDP_CONTROL_PORT);
+    udp->control_socket.send((void*)message.c_str(),message.size());
 
     if(itHasReply){
         char reply[4];
         memset(reply,0,4);
-        udp->recv((void*)reply,sizeof(reply),UDP_CONTROL_PORT);
+        udp->control_socket.recv((void*)reply,sizeof(reply));
         return *(uint32_t *)reply;
     }
     return 0;
@@ -56,8 +56,3 @@ void cmd_manager::writeReg(uint32_t addr, uint32_t value) {
 
     sendCmd(cmd_str,false);
 }
-
-
-
-
-

@@ -15,26 +15,42 @@
 
 #define MAX_PAYLOAD_SIZE 8192
 
+//#define UDP_DEBUG_MODE
 
-namespace mimorph{
-    class udp_transport {
+#ifdef UDP_DEBUG_MODE
+#define DEBUG_PRINT(x) perror(x)
+#else
+#define DEBUG_PRINT(x)    // Nothing
+#endif
+
+namespace mimorph {
+
+    class udp_socket {
 
     public:
-        void send(void *data, ssize_t num_bytes,int port);
-        ssize_t recv(void *data, ssize_t num_bytes, int port);
+        void send(void *data, ssize_t num_bytes);
 
-        udp_transport(const char* _ip, int _control_port, int _data_port, int client_port);
+        ssize_t recv(void *data, ssize_t num_bytes);
+
+        udp_socket(const char *_ip, int client_port);
 
     private:
         int socket_;
         sockaddr_in clientAddr;
         sockaddr_in serverAddr;
-        const char* ip;
-        int control_port;
-        int data_port;
+        const char *ip;
     };
+
+    class udp_transport {
+    public:
+        udp_transport(const char *_ip, int data_port, int control_port, int metadata_port)
+                : data_socket(_ip, data_port), control_socket(_ip, control_port), metadata_socket(_ip, metadata_port) {}
+
+        udp_socket data_socket;
+        udp_socket control_socket;
+        udp_socket metadata_socket;
+    };
+
 }
-
-
 
 #endif //MIMORPH_RT_UDP_TRANSPORT_H

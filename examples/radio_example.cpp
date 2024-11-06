@@ -145,7 +145,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio.control->set_rx_split_config(radio_config->rx_split);
 
     //cfo correction
-   radio.control->set_rx_cfo_correction_param(radio_config->bw,true,1);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,1);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
 
     radio_config->ofdm.OFDM_Bypass=false;
     radio_config->ofdm.CP1=400;
@@ -165,8 +165,8 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio.control->set_rx_filter_param(radio_config->bw);
 
     //configure ssb block
-    radio_config->synchronization.ssb_sync=10447;//5403*2;//10447+75;
-    radio_config->synchronization.slot_len=30944;//30944 //30976
+    radio_config->synchronization.ssb_sync=10447;
+    radio_config->synchronization.slot_len=30944;
     radio.control->set_rx_ssb_param(bw,radio_config->synchronization);
 
     //configure channel estimation block
@@ -174,8 +174,8 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio_config->equalization.scs=6;
     radio_config->equalization.symbol_index=3;
     radio_config->equalization.num_sc_virtual=(radio_config->ofdm.num_sc+22); //this variable is adding 22 "virtual" sc to the sides
-    radio_config->equalization.inv_num_dmrs=56; // este valor habria que ponerlo mejor
-    radio_config->equalization.scaling_nVar=63; // este valor habria que ponerlo mejor
+    radio_config->equalization.inv_num_dmrs=56;
+    radio_config->equalization.scaling_nVar=63;
     radio.control->set_rx_ce_param(radio_config->equalization);
 
     //configure equalization block
@@ -187,7 +187,6 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio_config->phase_tracking.even=false;
     radio_config->phase_tracking.SSB_index[0]=744;
     radio_config->phase_tracking.SSB_index[1]=996;
-
     radio_config->phase_tracking.SSB_symbols[0]=9;
     radio_config->phase_tracking.SSB_symbols[1]=10;
     radio_config->phase_tracking.SSB_symbols[2]=11;
@@ -203,10 +202,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio_config->tbs=21504;
     radio_config->code_rate=490.0/1024;
     auto ldpc_config = get_LDPC_config(radio_config->tbs, radio_config->code_rate,radio_config->num_sch_sym*2,MOD_QPSK);
-    radio.control->set_rx_ldcp_param(ldpc_config);
-
-
-    usleep(10);
+    radio.control->set_rx_ldcp_param(ldpc_config);;
 }
 
 void set_scheduler_options(){
@@ -305,7 +301,7 @@ int main() {
     mimorph::slot_str rx_data(num_of_rx_bytes,radio_config->ofdm.num_sc*4);
 
     int n_errors=0;
-    int n_packets=10;
+    int n_packets=1000;
     usleep(10000);
 
     std::cout << "Starting experiment: " << std::endl;
@@ -313,7 +309,7 @@ int main() {
     for(int i=0;i<n_packets;i++){
 
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);
+        radio.stream->receive(&rx_data,num_of_rx_bytes,true,true,true);
 
         if(rx_split==SPLIT_6){
             remove_ldpc_padding(&rx_data.data);

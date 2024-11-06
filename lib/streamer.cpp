@@ -4,37 +4,37 @@
 
 #include "../include/streamer.h"
 #include "../include/defines.h"
-#include <chrono>
+#include "cmath"
+
 namespace mimorph {
     void streamer::unpack_metadata(slot_str* slot,bool ce_enable, bool energy_enable, bool cfo_enable){
         ssize_t num_bytes=0;
         auto ce_size=(ssize_t)slot->channel_estimation.size();
         if (ce_enable)num_bytes+=ce_size;
-        if (energy_enable) num_bytes+=1;
-        if (cfo_enable) num_bytes+=1;
+        if (energy_enable) num_bytes+=4;
+        if (cfo_enable) num_bytes+=2;
 
         if (!num_bytes) return ;
 
-        //uint8_t* data; //allocate data first
-        auto data= new int;
-        ssize_t recv_bytes=udp->recv(data,num_bytes,UDP_METADATA_PORT);
+        auto data= new uint8_t [num_bytes];
+
+        ssize_t recv_bytes=udp->metadata_socket.recv(data,num_bytes);
         if(recv_bytes<num_bytes)
-            std::cout << "Less bytes received than expected:" << recv_bytes << " bytes\n";
+            STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
 
         if (ce_enable){
-            //std::copy(data,data+slot->channel_estimation.size(),slot->channel_estimation.begin());
-            slot->channel_estimation.insert(slot->channel_estimation.begin(),data,data+ce_size);
+            slot->channel_estimation.assign(data,data+ce_size);
             data+=ce_size;
         }
         if (energy_enable){
-            slot->energy=data[0];
-            data++;
+            uint64_t power=(data[3] << 24) | (data[2] << 16) |(data[1] << 8) | (data[0]);
+            slot->energy=static_cast<double>(power)/pow(2,16);
+            data+=4;
         }
         if (cfo_enable){
-            slot->cfo=data[1];
-            data++;
+            int cfo=(data[1] << 8) | (data[0]);
+            slot->cfo=round(240 * 1e3 * (cfo/pow(2,15)) / (2*M_PI));
         }
-
     }
 
     bool streamer::triggerTX(ssize_t num_bytes){
@@ -43,7 +43,7 @@ namespace mimorph {
         cmd_str.cmdArgs.push_back(std::to_string(num_bytes));
 
         if(cmdManager->sendCmd(cmd_str,true)!=UDP_CMD_ACK){
-            //std::cout << "TX trigger was not set successfully\n";
+            STREAM_DEBUG_PRINT("STREAMER_DEBUG: TX trigger wasn't set succesfully\n");
             return false;
         };
         return true;
@@ -58,6 +58,7 @@ namespace mimorph {
         cmd_str.cmdArgs.push_back(std::to_string(cfo_enable));
 
         if(cmdManager->sendCmd(cmd_str,true)!=UDP_CMD_ACK){
+            STREAM_DEBUG_PRINT("STREAMER_DEBUG: RX trigger wasn't set succesfully\n");
             return false;
         };
         return true;
@@ -72,37 +73,36 @@ namespace mimorph {
 
         cmdManager->sendCmd(cmd_str,false);
         for(int trial=0;trial<NUMBER_OF_RETRIES;trial++) {
-            udp->recv((void *) reply, sizeof(reply), UDP_CONTROL_PORT);
+            udp->control_socket.recv((void *) reply, sizeof(reply));
             if(reply[0]==UDP_CMD_ACK){
-                udp->send(data,num_bytes,UDP_CONTROL_PORT);
+                udp->control_socket.send(data,num_bytes);
                 return true;
             }
             usleep(50000);
         }
-        perror("Loading SSB block failed");
+        perror("STREAMER_DEBUG: Loading SSB block failed");
         exit(0);
     }
 
 
     void streamer::transmit(void *data, ssize_t num_bytes){
         if(triggerTX(num_bytes)){
-            udp->send(data,num_bytes,UDP_DATA_PORT);
+            udp->data_socket.send(data,num_bytes);
             return;
         }
-        //std::cout << "Failed to set trigger after trials\n";
     }
 
-    void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable) {
-        if(triggerRX(num_bytes, ce_enable, energy_enable, cfo_enable)){
-            ssize_t recv_bytes=udp->recv(slot->data.data(),num_bytes,UDP_DATA_PORT);
-            if(recv_bytes<num_bytes)
-                std::cout << "Less bytes received than expected:" << recv_bytes << " bytes\n";
-            if(ce_enable | energy_enable | cfo_enable){
-                unpack_metadata(slot,ce_enable,energy_enable,cfo_enable);
-            }
-            return;
+void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable) {
+    if(triggerRX(num_bytes, ce_enable, energy_enable, cfo_enable)){
+        ssize_t recv_bytes=udp->data_socket.recv(slot->data.data(),num_bytes);
+        if(recv_bytes<num_bytes)
+            STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+        if(ce_enable | energy_enable | cfo_enable){
+            unpack_metadata(slot,ce_enable,energy_enable,cfo_enable);
         }
+        return;
     }
+}
 
 /*    void streamer::receive_multiple_slots(std::vector<slot_str> slots, ssize_t num_bytes_per_slot, bool ce_enable, bool energy_enable, bool cfo_enable) {
         if(triggerRX(num_bytes_per_slot, ce_enable, energy_enable, cfo_enable)){

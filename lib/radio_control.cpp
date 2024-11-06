@@ -210,7 +210,6 @@ bool radio_control::init_platform() {
     version = cmdManager->sendCmd(cmd, true);
 
     if(!version){
-        //std::cout << "Platform unavailable";
         return false;
     }
     std::cout << "Connected to platform with version: " << (char *) &version << "\n";

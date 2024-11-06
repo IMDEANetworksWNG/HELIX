@@ -10,14 +10,22 @@
 
 #define NUMBER_OF_RETRIES 5
 
+#define STREAMER_DEBUG_MODE
+
+#ifdef STREAMER_DEBUG_MODE
+#define STREAM_DEBUG_PRINT(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define DEBUG_PRINT(x)    // Nothing
+#endif
+
 
 namespace mimorph {
 
     struct  slot_str{
         std::vector<uint8_t>     data;
         std::vector<uint8_t>     channel_estimation;
-        float                    energy;
-        float                    cfo;
+        double                    energy;
+        double                    cfo;
 
         slot_str(size_t data_size, size_t ce_size) : data(data_size),
         channel_estimation(ce_size),
