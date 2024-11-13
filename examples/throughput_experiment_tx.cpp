@@ -198,7 +198,6 @@ int main() {
     }
 
     std::vector<int16_t> tx_data=load_waveform_from_file(filename);
-
     int n_packets=1000;
     usleep(10000);
 
@@ -206,9 +205,8 @@ int main() {
 
     while(1){
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        usleep(100000);
+        usleep(10000);
     }
-
 
     std::cout << "Experiment is finished " << std::endl;
 
