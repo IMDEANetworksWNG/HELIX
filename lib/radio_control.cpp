@@ -12,6 +12,12 @@ void radio_control::set_streaming_param(stream_str params) {
     cmdManager->writeReg(STREAM_MANAGER_ADDR+CONTROL_UDP_IFG_OFFSET,params.udp_rx_ifg/STREAM_MANAGER_DATA_WIDTH_BYTES);
     cmdManager->writeReg(STREAM_MANAGER_ADDR+CONTROL_UDP_MSS_OFFSET,params.udp_rx_mss/STREAM_MANAGER_DATA_WIDTH_BYTES);
 
+    cmd_struct cmd_str;
+    cmd_str.cmd="configUDPServer ";
+    cmd_str.cmdArgs.push_back(std::to_string(params.udp_rx_ifg));
+    cmd_str.cmdArgs.push_back(std::to_string(params.udp_rx_mss));
+    cmdManager->sendCmd(cmd_str,false);
+
     cmdManager->writeReg(STREAM_MANAGER_ADDR+CONTROL_TX_RADIO_MSS_OFFSET,params.radio_tx_mss/STREAM_MANAGER_DATA_WIDTH_BYTES);
     cmdManager->writeReg(STREAM_MANAGER_ADDR+CONTROL_TX_RADIO_IFG_OFFSET,params.radio_tx_ifg/STREAM_MANAGER_DATA_WIDTH_BYTES);
 }

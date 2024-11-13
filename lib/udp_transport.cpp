@@ -31,7 +31,7 @@ udp_socket::udp_socket(const char* _ip, int client_port):
     //Timeout for the socket (100ms)
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = 10000; //10
+    tv.tv_usec = 20000; //10
     if (setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
         DEBUG_PRINT("UDP_DEBUG: " );
     }
