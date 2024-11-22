@@ -3,7 +3,7 @@
 //
 
 #include "../include/cmd_manager.h"
-#include "../include/defines.h"
+#include <cstring>
 
 using namespace mimorph;
 

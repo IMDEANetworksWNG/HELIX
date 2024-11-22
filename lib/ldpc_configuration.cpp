@@ -5,6 +5,7 @@
 #include "../include/ldpc_configuration.h"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 
 bgn_info getBGNInfo(int A, double R) {

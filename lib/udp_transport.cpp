@@ -3,6 +3,11 @@
 //
 
 #include "../include/udp_transport.h"
+#include <iostream>
+#include <string>
+#include <arpa/inet.h> // For sockaddr_in
+#include <sys/socket.h>
+#include <netinet/ip.h>
 
 using namespace mimorph;
 

@@ -3,20 +3,6 @@ project(MIMORPH_RT)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#[[add_executable(MIMORPH_RT examples/main.cpp
-        lib/udp_transport.cpp
-        include/udp_transport.h
-        lib/cmd_manager.cpp
-        include/cmd_manager.h
-        lib/streamer.cpp
-        include/streamer.h
-        lib/radio_control.cpp
-        include/radio_control.h
-        lib/mimorph.cpp
-        include/mimorph.h
-        examples/test_xlsx.cpp
-)]]
-
 add_library(MIMORPH_RT
         lib/udp_transport.cpp
         include/udp_transport.h
@@ -35,20 +21,38 @@ add_library(MIMORPH_RT
 )
 add_executable(radio_example examples/radio_example.cpp
         lib/ldpc_configuration.cpp
-        include/ldpc_configuration.h)
+        include/ldpc_configuration.h
+        examples/helpers.h
+        examples/helpers.cpp)
 
-add_executable(sinewave_example examples/sinewave_example.cpp)
+add_executable(sinewave_example examples/sinewave_example.cpp
+        examples/helpers.h
+        examples/helpers.cpp)
 
-target_link_libraries(radio_example
-        MIMORPH_RT)
+add_executable(throughput_experiments_tx examples/throughput_experiment_tx.cpp
+        examples/helpers.cpp
+        examples/helpers.h)
+
+add_executable(throughput_experiments_rx examples/throughput_experiment_rx.cpp
+        examples/helpers.cpp
+        examples/helpers.h)
+
+add_executable(microbenchmark examples/microbenchmark_exp.cpp
+        examples/helpers.cpp
+        examples/helpers.h)
 
 target_link_libraries(sinewave_example
         MIMORPH_RT)
 
-add_executable(throughput_experiments_tx examples/throughput_experiment_tx.cpp)
-
-target_link_libraries(sinewave_example
+target_link_libraries(microbenchmark
         MIMORPH_RT)
 
 target_link_libraries(throughput_experiments_tx
+        MIMORPH_RT)
+
+target_link_libraries(throughput_experiments_rx
+        MIMORPH_RT)
+
+
+target_link_libraries(radio_example
         MIMORPH_RT)

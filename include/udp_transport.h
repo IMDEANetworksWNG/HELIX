@@ -5,12 +5,6 @@
 #ifndef MIMORPH_RT_UDP_TRANSPORT_H
 #define MIMORPH_RT_UDP_TRANSPORT_H
 
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <arpa/inet.h> // For sockaddr_in
-#include <sys/socket.h>
-#include <unistd.h>
 #include <netinet/ip.h>
 
 #define MAX_PAYLOAD_SIZE 8192

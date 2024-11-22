@@ -5,11 +5,8 @@
 #ifndef MIMORPH_RT_CMD_MANAGER_H
 #define MIMORPH_RT_CMD_MANAGER_H
 
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <unistd.h>
 #include <vector>
+#include <string>
 #include "udp_transport.h"
 
 namespace mimorph{

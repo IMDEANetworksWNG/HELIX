@@ -4,6 +4,7 @@
 
 #include "../include/mimorph.h"
 #include "../include/defines.h"
+#include <iostream>
 
 namespace mimorph {
     mimorph::mimorph(const char* _ip):

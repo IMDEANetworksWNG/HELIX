@@ -1,3 +1,5 @@
 cmake-build-debug-mantis/
 cmake-build-debug-avocado/
 cmake-build-debug-lime/
+.idea/
+cmake-build-debug-lime/

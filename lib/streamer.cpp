@@ -5,7 +5,8 @@
 #include "../include/streamer.h"
 #include "../include/defines.h"
 #include "cmath"
-#include <chrono>
+#include <cstring>
+#include <unistd.h>
 
 namespace mimorph {
     void streamer::unpack_metadata(slot_str* slot,bool ce_enable, bool energy_enable, bool cfo_enable){

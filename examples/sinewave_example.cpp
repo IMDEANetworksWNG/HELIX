@@ -1,12 +1,10 @@
 #include "../include/mimorph.h"
 #include "../include/defines.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "helpers.h"
 #include <vector>
 #include <string>
 #include <cmath>
-#include <chrono>
+#include <unistd.h>
 
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
@@ -16,47 +14,6 @@ const int num_of_tx_bytes=1024*128;
 std::vector<mimorph::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
-}
-
-
-std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file" << std::endl;
-        exit(0);
-    }
-
-    std::vector<int16_t> values;
-    std::string line;
-
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        //ss << std::hex << line;
-        int16_t value;
-        ss >> value;
-        values.push_back(value);
-    }
-
-    file.close();
-    return values;
-}
-
-
-
-void set_scheduler_options(){
-    cpu_set_t mask;
-    CPU_ZERO(&mask);
-    CPU_SET(50, &mask);  // Bind process to core 50
-    if (sched_setaffinity(0, sizeof(mask), &mask)) {
-        std::cerr << "Failed to set process affinity: " << strerror(errno) << std::endl;
-    }
-    sched_param param{};
-    param.sched_priority = sched_get_priority_max(SCHED_FIFO);
-
-    // Set the scheduling policy to FIFO (Real-time)
-    if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
-        std::cerr << "Failed to set process priority: " << strerror(errno) << std::endl;
-    }
 }
 
 int main() {
