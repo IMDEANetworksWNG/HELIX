@@ -40,10 +40,10 @@ struct bgn_info {
 struct ldpc_regs{
     uint16_t Kdm1=0;
     std::vector<uint16_t> Em1;
-    uint16_t E_F1=0;
-    uint16_t E_F2=0;
-    uint16_t E_L1=0;
-    uint16_t E_L2=0;
+    uint32_t E_F1=0;
+    uint32_t E_F2=0;
+    uint32_t E_L1=0;
+    uint32_t E_L2=0;
     uint16_t E_jump1=0;
     uint16_t E_jump2=0;
     uint16_t nPunctured=0;
@@ -51,7 +51,7 @@ struct ldpc_regs{
     uint16_t Fm1=0;
     uint16_t lastFillers=0;
     std::vector<uint16_t> nZeros;
-    uint16_t lastZeros=0;
+    uint32_t lastZeros=0;
     uint64_t ldpc_ctrl_regs=0;
     uint16_t CM1=0;
     uint16_t F_R=0;

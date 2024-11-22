@@ -77,6 +77,7 @@ namespace mimorph {
         uint16_t            num_sch_sym;
         uint16_t            mod_order;
         uint16_t            offsetSSB;
+        uint16_t            ldpc_segmented_length;
         float               ifs; //inter-frame spacing at tx
         float               code_rate; //inter-frame spacing at tx
     };

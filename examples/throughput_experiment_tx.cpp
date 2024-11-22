@@ -9,8 +9,8 @@
 
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/home/imdea/Mobisys25_experiments/";
-
+//const std::string  experiments_folder = "/home/imdea/Mobisys25_experiments/";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/GEN_DATA/MED_RATE";
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -122,7 +122,7 @@ void configure_tx_blocks(mimorph::mimorph& radio, bool bw, uint8_t tx_split){
 
     radio.control->set_tx_buildGrid_param(radio_config->ofdm,radio_config->phase_tracking,radio_config->equalization, radio_config->offsetSSB);
     //Load SSB data into the memory
-    std::string filename = experiments_folder +  "/Transmitter/slotFR2_CH1_SSB_TX1.txt";
+    std::string filename = experiments_folder +  "/slotFR2_CH1_SSB_TX1.txt";
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     radio.control->set_tx_lbm_param(tx_data.size());
     radio.stream->load_SSB_data(tx_data.data(),tx_data.size() * 2);
@@ -163,7 +163,7 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
-    uint8_t tx_split=SPLIT_7;
+    uint8_t tx_split=SPLIT_8;
 
     //set radio ifg and mss
     stream_config.radio_tx_mss=pow(2,32)*8-1;
@@ -182,30 +182,30 @@ int main() {
     std::string filename;
     switch(tx_split){
         case SPLIT_7:
-            filename  = experiments_folder +  "/Transmitter/slotFR2_CH1_SP7_TX1.txt";
+            filename  = experiments_folder +  "/slotFR2_CH1_7_TX1.txt";
             break;
         case SPLIT_7_1: //este paquete tenia un padding de 0s que hacia que no funcionase
-            filename  = experiments_folder + "/Transmitter/slotFR2_CH1_7.1_TX1.txt";
+            filename  = experiments_folder + "/slotFR2_CH1_7.1_TX1.txt";
             break;
         case SPLIT_7_2:
-            filename  = experiments_folder +  "/Transmitter/slotFR2_CH1_SP7.2_TX1.txt";
+            filename  = experiments_folder +  "/slotFR2_CH1_7.2_TX1.txt";
             break;
         case SPLIT_8:
-            filename  = experiments_folder +  "/Transmitter/slotFR2_CH1_SP8_TX1.txt";
+            filename  = experiments_folder +  "/slotFR2_CH1_8_TX1.txt";
             break;
         default:
-            filename  = experiments_folder +  "/Transmitter/slotFR2_CH1_SP7_TX1.txt";
+            filename  = experiments_folder +  "/slotFR2_CH1_7_TX1.txt";
     }
 
     std::vector<int16_t> tx_data=load_waveform_from_file(filename);
     int n_packets=1000;
-    usleep(10000);
+    usleep(1000);
 
     std::cout << "Starting experiment as Transmitter: " << std::endl;
 
     while(1){
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        usleep(10000);
+        usleep(10000); //10000 - 500
     }
 
     std::cout << "Experiment is finished " << std::endl;

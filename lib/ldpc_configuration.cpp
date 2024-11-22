@@ -261,8 +261,19 @@ std::vector<double> cbsRateRecover(const std::vector<double>& in, const ldpc_inf
     std::vector<int> E_out(C, 0);
 
     for (int r = 0; r < C; ++r) {
-        int E = (r <= C - G / (nlayers * Qm) % C - 1) ? nlayers * Qm * std::floor(G / (nlayers * Qm * C))
-                                                      : nlayers * Qm * std::ceil(G / (nlayers * Qm * C));
+/*        int E = (r <= C - G / (nlayers * Qm) % C - 1) ? nlayers * Qm * std::floor(G / (nlayers * Qm * C))
+                                                      : nlayers * Qm * std::ceil(G / (nlayers * Qm * C));*/
+
+        double G_scaled = G / static_cast<double>(nlayers * Qm);
+        double mod_result = std::fmod(G_scaled, C);
+        int threshold = static_cast<int>(C - mod_result - 1);
+
+        int E;
+        if (r <= threshold) {
+            E = static_cast<int>(nlayers * Qm * std::floor(G_scaled / C));
+        } else {
+            E = static_cast<int>(nlayers * Qm * std::ceil(G_scaled / C));
+        }
 
         std::vector<double> deconcatenated;
         if (G < E) {
@@ -336,15 +347,29 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
         lastKd.assign(ldpc_config.C, ldpc_config.Kd % ldpc_config.ssr == 0 ? ldpc_config.ssr : ldpc_config.Kd % ldpc_config.ssr);
         F_R = 1;
     } else {
-        Kd_tranf.assign(ldpc_config.C, std::ceil((ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) / static_cast<double>(ldpc_config.ssr)));
-        lastKd.assign(ldpc_config.C, (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr);
+        Kd_tranf.clear();
+        lastKd.clear();
+        for (int i = 0; i < ldpc_config.C; i++){
+            Kd_tranf.push_back(std::ceil((ldpc_config.Kd - ldpc_config.E[i] / ldpc_config.modOrder) / static_cast<double>(ldpc_config.ssr)));
+            lastKd.push_back((ldpc_config.Kd - ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.Kd - ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr);
+        }
+         //   Kd_tranf.assign(ldpc_config.C, std::ceil((ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) / static_cast<double>(ldpc_config.ssr)));
+       // lastKd.assign(ldpc_config.C, (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr);
         F_R = 0;
     }
 
     // Calculate E_tranf and lastE
     for (int i = 0; i < ldpc_config.C; i++) {
         E_tranf[i] = std::ceil(ldpc_config.E[i] / static_cast<double>(ldpc_config.ssr * ldpc_config.modOrder));
-        lastE[i] = (ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr;
+        //lastE[i] = (ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.E[i] / ldpc_config.modOrder) % ldpc_config.ssr;
+    }
+
+    for (int i = 0; i < ldpc_config.C; i++) {
+        double scaledE = ldpc_config.E[i] / static_cast<double>(ldpc_config.modOrder);
+        double factor = std::floor(scaledE / ldpc_config.ssr);
+        double remainder = scaledE - (factor * ldpc_config.ssr);
+
+        lastE[i] = (remainder == 0) ? ldpc_config.ssr : static_cast<int>(remainder);
     }
 
     // Set initial rF1 for first iteration
@@ -396,9 +421,12 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
     }
 
     // Calculate punctured, fillers, and zeros values
+    int lastZeros[ldpc_config.C];
     int lastPunctured = 2 * ldpc_config.Zc % ldpc_config.ssr == 0 ? ldpc_config.ssr : 2 * ldpc_config.Zc % ldpc_config.ssr;
     int lastFillers = ldpc_config.F % ldpc_config.ssr == 0 ? ldpc_config.ssr : ldpc_config.F % ldpc_config.ssr;
-    int lastZeros = (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.N - ldpc_config.E[0] - ldpc_config.F) % ldpc_config.ssr;
+    for (int i = 0; i < ldpc_config.C; i++){
+        lastZeros[i] = (ldpc_config.N - ldpc_config.E[i] - ldpc_config.F) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.N - ldpc_config.E[i] - ldpc_config.F) % ldpc_config.ssr;
+    }
 
     // Check if N is a multiple of SSR
     if (ldpc_config.N % ldpc_config.ssr != 0) {
@@ -410,13 +438,13 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
     for (int i=0;i<ldpc_config.C;i++)
     {
         ldpc_config.regs.Em1.push_back((E_tranf[i]-1));
-        ldpc_config.regs.nZeros.push_back ((static_cast<int>(ceil(static_cast<double>(ldpc_config.N-ldpc_config.E[0]-ldpc_config.F)/ldpc_config.ssr))-1));
+        ldpc_config.regs.nZeros.push_back ((static_cast<int>(ceil(static_cast<double>(ldpc_config.N-ldpc_config.E[i]-ldpc_config.F)/ldpc_config.ssr))-1));
 
         ldpc_config.regs.E_F1 |= (rF1[i]-1) <<(i*4);
         ldpc_config.regs.E_F2 |= (rF2[i]-1) <<(i*4);
         ldpc_config.regs.E_L1 |= (rL1[i]-1) <<(i*4);
         ldpc_config.regs.E_L2 |= (rL2[i]-1) <<(i*4);
-        ldpc_config.regs.lastZeros |= (lastZeros-1) <<(i*4);
+        ldpc_config.regs.lastZeros |= (lastZeros[i]-1) <<(i*4);
 
         ldpc_config.regs.E_jump1 |= jump1[i] <<i;
         ldpc_config.regs.E_jump2 |= jump2[i] <<i;
@@ -426,7 +454,7 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
     ldpc_config.regs.nPunctured=ceil(2.0*ldpc_config.Zc/ldpc_config.ssr)-1-1; //might be wrong.. check
     ldpc_config.regs.lastPunctured=lastPunctured-1;
     ldpc_config.regs.Fm1= ceil( static_cast<double>(ldpc_config.F)/ldpc_config.ssr)-1;
-    ldpc_config.regs.lastFillers= lastPunctured-1;
+    ldpc_config.regs.lastFillers= lastFillers-1;
     //
 
     ldpc_config.regs.CM1= ldpc_config.C-1;
@@ -479,7 +507,7 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
     ldpc_config.regs.ldpc_ctrl_regs=z_j_sel[0]
                                     | a_sel[0]<<3
                                     | (ldpc_config.bgn-1)<<6 // base graph number
-                                    | 12<<9 //Normalization value
+                                    | 12<<9 //Normalization value 0.75 --12 / 0.5 --8
                                     | 0 <<13 //reserved
                                     | 1 <<14 //0: Soft output; 1: hard output
                                     | 0 <<15 //Output systematic values and parity

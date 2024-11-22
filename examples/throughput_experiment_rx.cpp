@@ -10,7 +10,9 @@
 
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/MATLAB/CAPTURED_DATA/MIMORPH_RT/";
+//const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
+const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/MATLAB/";
+const std::string  subfolder = "/CAPTURED_DATA/BER/MED_RATE/8dB_SNR/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7", "SPLIT7_1", "SPLIT7_2", "SPLIT8"};
 
 
@@ -71,7 +73,7 @@ void writeBinaryFile(const std::string &filename, const std::vector<uint8_t> &da
 
     // Check if the file opened successfully
     if (!file.is_open()) {
-        std::cerr << "Could not open the file for writing!" << std::endl;
+        std::cerr << "Could not open the file for writing!  -> " <<  filename << std::endl;
         return;
     }
 
@@ -82,8 +84,28 @@ void writeBinaryFile(const std::string &filename, const std::vector<uint8_t> &da
 
     // Close the file
     file.close();
+}
 
-    std::cout << "Data written to " << filename << std::endl;
+void writeBinaryFileDouble(const std::string &filename, const std::vector<double> &data) {
+    // Create a binary file output stream
+    if(data.empty())
+        return;
+
+    std::ofstream file(filename, std::ios::binary);
+
+    // Check if the file opened successfully
+    if (!file.is_open()) {
+        std::cerr << "Could not open the file for writing!  -> " <<  filename << std::endl;
+        return;
+    }
+
+    // Write the data to the binary file
+    for (double value : data) {
+        file.write(reinterpret_cast<const char*>(&value), sizeof(double));
+    }
+
+    // Close the file
+    file.close();
 }
 
 
@@ -128,7 +150,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio.control->set_rx_split_config(radio_config->rx_split);
 
     //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,2);//poner defines con los scaling //el escalado no funciona si el bloque no esta habilitado
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_MULT_2);
 
     radio_config->ofdm.OFDM_Bypass=false;
     radio_config->ofdm.CP1=400;
@@ -182,10 +204,11 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio.control->set_rx_demap_param(radio_config->num_sch_sym, radio_config->mod_order);
 
     //configure ldpc decoder
-    radio_config->tbs=21504;
-    radio_config->code_rate=490.0/1024;
+    radio_config->tbs=21504;  // vh -> 40976 -- high->33816 -- med ->21504 -- low ->14088
+    radio_config->code_rate= 490.0/1024; //low 318 -- med 490 -- high 768 -- vh 921;
     auto ldpc_config = get_LDPC_config(radio_config->tbs, radio_config->code_rate,radio_config->num_sch_sym*2,MOD_QPSK);
-    radio.control->set_rx_ldcp_param(ldpc_config);;
+    radio_config->ldpc_segmented_length= ldpc_config.K*ldpc_config.C;
+    radio.control->set_rx_ldcp_param(ldpc_config);
 }
 
 void set_scheduler_options(){
@@ -214,7 +237,7 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
-    uint8_t rx_split=SPLIT_7_1;
+    uint8_t rx_split=SPLIT_8;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss=1024*8;
@@ -223,22 +246,16 @@ int main() {
     radio.control->set_streaming_param(stream_config);
 
     configure_rx_blocks(radio,BW_MODE_HIGH,rx_split);
+    auto radio_parameters=radio.control->get_radio_config();
 
     //Set the frequency bands of the different converters
     std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
-
-    std::vector<uint8_t> tx_bytes;
-    if(rx_split==SPLIT_6){
-        std::string filename = experiments_folder + "/Transmitter/tx_bits.txt";
-        std::vector<int16_t> tx_bits=load_waveform_from_file(filename);
-        tx_bytes=convertToBytes(tx_bits);
-    }
     int num_of_rx_bytes;
     switch(rx_split){
         case SPLIT_6:
-            num_of_rx_bytes=2904;
+            num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
             break;
         case SPLIT_7:
             num_of_rx_bytes=45544*2;
@@ -250,26 +267,26 @@ int main() {
             num_of_rx_bytes=97440;
             break;
         case SPLIT_8:
-            num_of_rx_bytes=127872;
+            num_of_rx_bytes=15474*8;
             break;
         default:
             num_of_rx_bytes=2904;
     }
 
-    auto* radio_config=radio.control->get_radio_config();
-    mimorph::slot_str rx_data(num_of_rx_bytes,radio_config->ofdm.num_sc*4);
+    mimorph::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
 
-    int n_errors=0;
-    int n_rcv_pkts=0;
-    int n_packets=5;
+    int n_packets=25000;
     double signal_pow[n_packets];
     double noise_pow[n_packets];
-    sleep(1);
+
+    bool enable_snr=false;
+    bool enable_ce= false;
+    if(rx_split==SPLIT_6) enable_snr=true;
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
 
     while(1){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false,true,true);
+        radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,enable_snr,false);
         if(!rx_data.data.empty()) {
             std::cout << "Packet received. Number of bytes " << rx_data.data.size() << std::endl;
             break;
@@ -280,38 +297,36 @@ int main() {
             rx_data.data.resize(num_of_rx_bytes);
         }
     }
-    //auto start = std::chrono::high_resolution_clock::now();
     for(int i=0;i<n_packets;i++){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false,true,false);
+        auto start = std::chrono::high_resolution_clock::now();
+        radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,enable_snr,false);
+
         signal_pow[i]=rx_data.signal_pow;
         noise_pow[i]=rx_data.noise_pow;
-        if(rx_split==SPLIT_6){
-            if(!rx_data.data.empty()) {
-                n_rcv_pkts++;
-                remove_ldpc_padding(&rx_data.data);
-                if (!check_data(rx_data.data.data(), tx_bytes.data(), tx_bytes.size())) {
-                    n_errors++;
-                    std::cout << "Packet number " << i + 1 << " failed" << std::endl;
-                }
-            }
-        }
-        else if(!rx_data.data.empty()){
-            std::string rx_packet_fn = experiments_folder + split_string[rx_split-1] + "/Packet_" + std::to_string(i) + ".bin";
+
+        if(!rx_data.data.empty()){
+            std::string rx_packet_fn = experiments_folder + subfolder + split_string[rx_split-1] + "/Packet_" + std::to_string(i) + ".bin";
             writeBinaryFile(rx_packet_fn,rx_data.data);
+            if (enable_ce){
+                rx_packet_fn = experiments_folder + subfolder + split_string[rx_split-1] + "/Channel_Est_" + std::to_string(i) + ".bin";
+                writeBinaryFile(rx_packet_fn,rx_data.channel_estimation);
+            }
         }
         rx_data.data.clear();
         rx_data.data.resize(num_of_rx_bytes);
+ }
+
+    if(rx_split<SPLIT_7_2){
+        std::string side_info_fn = experiments_folder + subfolder + split_string[rx_split-1] + "/SNR_values.bin";
+        std::vector<double> SNR_values;
+        for (double val : signal_pow) {
+            SNR_values.push_back(val);
+        }
+        for (double val : noise_pow) {
+            SNR_values.push_back(val);
+        }
+        writeBinaryFileDouble(side_info_fn,SNR_values);
     }
 
-  /*  auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-    std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
-*/
-
-    if(rx_split==SPLIT_6) std::cout << "Number of packet with errors: " << n_errors << "/" << n_rcv_pkts << std::endl;
-
-/*    auto tp = static_cast<double>(1.0*(n_rcv_pkts -n_errors)*2904*8/ duration.count());
-    std::cout << "Measured throughput is : " << tp << "Mbps" << std::endl;*/
     return 1;
 }
