@@ -45,10 +45,10 @@ target_link_libraries(radio_example
 target_link_libraries(sinewave_example
         MIMORPH_RT)
 
-add_executable(throughput_experiments examples/throughput_experiment_tx.cpp)
+add_executable(throughput_experiments_tx examples/throughput_experiment_tx.cpp)
 
 target_link_libraries(sinewave_example
         MIMORPH_RT)
 
-target_link_libraries(throughput_experiments
+target_link_libraries(throughput_experiments_tx
         MIMORPH_RT)
