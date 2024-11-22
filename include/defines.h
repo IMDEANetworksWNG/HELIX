@@ -20,6 +20,14 @@
 #define CONTROL_TX_RADIO_IFG_OFFSET             0x14
 #define CONTROL_TX_RADIO_TRANSFER_SIZE_OFFSET   0x18
 
+//Scaling factor
+#define SCALE_FACTOR_DIV_1                      0
+#define SCALE_FACTOR_DIV_2                      1
+#define SCALE_FACTOR_DIV_4                      3
+#define SCALE_FACTOR_DIV_8                      4
+#define SCALE_FACTOR_MULT_2                     5
+#define SCALE_FACTOR_MULT_4                     6
+#define SCALE_FACTOR_MULT_8                     6
 
 //Transmitter blocks
 #define TX_OFDM_MOD_ADDR                        0xB000B000
