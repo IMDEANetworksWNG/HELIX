@@ -125,7 +125,7 @@ void radio_control::set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, d
             ptrs_params.SSB_symbols[2]<<22 | ptrs_params.SSB_symbols[3]<<27;
     cmdManager->writeReg(RX_PTRS_BLOCK_ADDR+0x4,value);
 
-    value = (ptrs_params.SSB_index[0]/SSR_ADC) | (ptrs_params.SSB_index[1]/SSR_ADC-1)<<12;
+    value = (static_cast<int>(ceil(static_cast<double>(ptrs_params.SSB_index[0]/SSR_ADC)))) | static_cast<int>(ceil(static_cast<double>(ptrs_params.SSB_index[1]/SSR_ADC))-1)<<12;
     cmdManager->writeReg(RX_PTRS_BLOCK_ADDR+0x8,value);
 }
 

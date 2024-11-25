@@ -17,6 +17,7 @@ std::vector<uint8_t> convertToBytes(const std::vector<int16_t>& input);
 void set_scheduler_options();
 std::vector<int16_t> load_waveform_from_file(const std::string& filename);
 void remove_ldpc_padding(std::vector<uint8_t>* rx_data);
+int getTBS(int mod_order,int nPRB, double R);
 
 #endif //MIMORPH_RT_HELPERS_H
 

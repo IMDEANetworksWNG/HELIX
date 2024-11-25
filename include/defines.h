@@ -77,4 +77,7 @@
 #define SPLIT_7_2 	4
 #define SPLIT_8	 	5
 
+#define SCALING_NVAR 1.1161
+#define NUM_DMRS_PER_RB 4
+
 #endif //MIMORPH_RT_DEFINES_H
