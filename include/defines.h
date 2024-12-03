@@ -79,5 +79,6 @@
 
 #define SCALING_NVAR 1.1161
 #define NUM_DMRS_PER_RB 4
+#define SSR_NR_PDSCH 64
 
 #endif //MIMORPH_RT_DEFINES_H

@@ -120,7 +120,7 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
-    uint8_t tx_split=SPLIT_8;
+    uint8_t tx_split=SPLIT_7;
 
     //set radio ifg and mss
     stream_config.radio_tx_mss=pow(2,32)*8-1;
@@ -162,7 +162,7 @@ int main() {
 
     while(1){
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        usleep(10000); //10000 - 500
+        usleep(440); //10000 - 500
     }
 
     std::cout << "Experiment is finished " << std::endl;

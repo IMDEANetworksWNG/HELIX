@@ -4,12 +4,14 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <unistd.h>
 #include <chrono>
+#include <unistd.h>
 #include <cmath>
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
+//const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/MATLAB/";
+const std::string  subfolder = "/CAPTURED_DATA/SENSING/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -26,7 +28,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split, int
     radio.control->set_rx_split_config(radio_config->rx_split);
 
     //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_DIV_2);
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_DIV_8);
 
     radio_config->ofdm.OFDM_Bypass=false;
     radio_config->ofdm.CP1=400;
@@ -94,7 +96,6 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split, int
     radio.control->set_rx_ldcp_param(ldpc_config);
 }
 
-
 int main() {
     //set task priority
     set_scheduler_options();
@@ -113,7 +114,7 @@ int main() {
 
     radio.control->set_streaming_param(stream_config);
 
-    //low 318 -- med 490 -- high 768 -- vh 921 // 73 and 145 RE //21867 -- 10527
+    //configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,73,MOD_QPSK,490.0/1024, 10527);
     configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,145,MOD_QPSK,490.0/1024, 21867);
     auto radio_parameters=radio.control->get_radio_config();
 
@@ -127,37 +128,37 @@ int main() {
             num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
             break;
         case SPLIT_7:
-            num_of_rx_bytes=45544*2; //22888 -- 45544
+            num_of_rx_bytes=45544*2;
             break;
         case SPLIT_7_1:
-            num_of_rx_bytes=45544*2; //22888 -- 45544
+            num_of_rx_bytes=45544*2;
             break;
         case SPLIT_7_2:
-            num_of_rx_bytes=radio_parameters->ofdm.num_sc*radio_parameters->ofdm.NumOFDMSyms*2*2;
+            num_of_rx_bytes=97440;
             break;
         case SPLIT_8:
             num_of_rx_bytes=15474*8;
             break;
         default:
-            num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
+            num_of_rx_bytes=2904;
     }
 
-    auto* radio_config=radio.control->get_radio_config();
-    mimorph::slot_str rx_data(num_of_rx_bytes,radio_config->ofdm.num_sc*4);
+    mimorph::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
 
-    int n_packets=10;
-    int n_recv_pkts=0;
-    int n_ce_err=0;
+    int n_packets=40000; //40000 with ifs of 0.5ms will be 20s
+    bool enable_ce= true;
+
+    std::vector<std::vector<uint8_t>> cest_data(n_packets);
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
-
-
+    rx_data.channel_estimation.clear();
     while(1){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);
+        radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,false,false);
         if(!rx_data.data.empty()) {
-            std::cout << "Packet received. Number of bytes " << rx_data.data.size() << std::endl;
-            rx_data.data.clear();
-            rx_data.data.resize(num_of_rx_bytes);
+            std::cout << "First packet received. Number of bytes " << rx_data.data.size() << std::endl;
+            cest_data[0]=rx_data.channel_estimation;
+            rx_data.channel_estimation.clear();
+            rx_data.channel_estimation.resize(radio_parameters->ofdm.num_sc*4);
             break;
         }
         usleep(100);
@@ -166,25 +167,25 @@ int main() {
             rx_data.data.resize(num_of_rx_bytes);
         }
     }
-
-    auto start = std::chrono::high_resolution_clock::now();
     for(int i=0;i<n_packets;i++){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false, false,false);
-        if(!rx_data.data.empty()){
-            n_recv_pkts++;
-        }
+        radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,false,false);
+        cest_data[i]=rx_data.channel_estimation;
+        rx_data.channel_estimation.clear();
+        rx_data.channel_estimation.resize(radio_parameters->ofdm.num_sc*4);
         rx_data.data.clear();
         rx_data.data.resize(num_of_rx_bytes);
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
+    // Flattened vector
+    std::vector<uint8_t> flattened;
 
-    int bytes_per_slot=1345; //5122 -- 2688 -- 2496 -- 1345
+    // Append each inner vector's elements to the flattened vector
+    for (const auto& innerVec : cest_data) {
+        flattened.insert(flattened.end(), innerVec.begin(), innerVec.end());
+    }
+    std::string side_info_fn = experiments_folder + subfolder + "/cest_nre145_3.bin";
+    writeBinaryFile(side_info_fn,flattened);
 
-    auto tp = static_cast<double>(1.0*(n_recv_pkts)*bytes_per_slot*8/ duration.count());
-    std::cout << "Recv packets: " << n_recv_pkts << "/" << n_packets << std::endl;
-    std::cout << "Measured throughput is : " << tp << "Mbps" << std::endl;
+
     return 1;
 }

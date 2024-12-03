@@ -10,7 +10,7 @@
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 //const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/MATLAB/";
-const std::string  subfolder = "/CAPTURED_DATA/BER/MED_RATE/8dB_SNR/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
+const std::string  subfolder = "/CAPTURED_DATA/MIMORPH_RT/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7", "SPLIT7_1", "SPLIT7_2", "SPLIT8"};
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
@@ -28,7 +28,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split){
     radio.control->set_rx_split_config(radio_config->rx_split);
 
     //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_MULT_2);
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_DIV_8);
 
     radio_config->ofdm.OFDM_Bypass=false;
     radio_config->ofdm.CP1=400;
@@ -137,7 +137,7 @@ int main() {
 
     mimorph::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
 
-    int n_packets=25000;
+    int n_packets=10;
     double signal_pow[n_packets];
     double noise_pow[n_packets];
 
