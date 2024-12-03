@@ -9,12 +9,17 @@
 #include <cmath>
 
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/GEN_DATA/MED_RATE";
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
+
+/*std::vector<mimorph::converter_conf> create_conv_conf(){
+    return  {{400,RFDC_DAC_TYPE,0,0,true},
+             {-400,RFDC_ADC_TYPE,2,0,true}};
+}*/
 
 
 void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split, int num_resource_elements, int mod_order, float rate, int num_psch_symbs){
@@ -94,6 +99,35 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split, int
     radio.control->set_rx_ldcp_param(ldpc_config);
 }
 
+void configure_tx_blocks(mimorph::mimorph& radio, bool bw, uint8_t tx_split){
+
+    auto* radio_config=radio.control->get_radio_config();
+    radio_config->bw=bw;
+    radio_config->tx_split=tx_split;
+    radio.control->set_tx_split_config(radio_config->tx_split);
+
+    radio.control->set_tx_buildGrid_param(radio_config->ofdm,radio_config->phase_tracking,radio_config->equalization, radio_config->offsetSSB);
+    //Load SSB data into the memory
+    std::string filename = experiments_folder +  "/slotFR2_CH1_SSB_TX1.txt";
+    std::vector<int16_t> tx_data = load_waveform_from_file(filename);
+    radio.control->set_tx_lbm_param(tx_data.size());
+    radio.stream->load_SSB_data(tx_data.data(),tx_data.size() * 2);
+
+    //radio.control->set_tx_ofdm_param(radio_config->ofdm);
+    radio.control->set_tx_ofdm_param(radio_config->ofdm);
+    radio_config->ifs=0;
+    radio.control->set_tx_filter_param(radio_config->bw,radio_config->ifs);
+
+    int leftover=0;
+    int padblock=0;
+    if ((radio_config->num_sch_sym*radio_config->mod_order) % SSR_NR_PDSCH > 0){
+        leftover = (radio_config->num_sch_sym*radio_config->mod_order) % SSR_NR_PDSCH;
+        padblock = SSR_NR_PDSCH-leftover ;
+    }
+
+    radio.control->set_tx_nrPDSCH(radio_config->mod_order,radio_config->num_sch_sym*radio_config->mod_order +padblock,leftover);
+}
+
 
 int main() {
     //set task priority
@@ -105,16 +139,19 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
-    uint8_t rx_split=SPLIT_6;
+    uint8_t rx_split=SPLIT_8;
+    uint8_t tx_split=SPLIT_8;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss=1024*8;
     stream_config.udp_rx_ifg=stream_config.udp_rx_mss/10;
-
+    stream_config.radio_tx_mss=pow(2,32)*8-1;
+    stream_config.radio_tx_ifg=0;
     radio.control->set_streaming_param(stream_config);
 
     //low 318 -- med 490 -- high 768 -- vh 921 // 73 and 145 RE //21867 -- 10527
     configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,145,MOD_QPSK,490.0/1024, 21867);
+    configure_tx_blocks(radio,BW_MODE_HIGH,tx_split);
     auto radio_parameters=radio.control->get_radio_config();
 
     //Set the frequency bands of the different converters
@@ -127,10 +164,10 @@ int main() {
             num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
             break;
         case SPLIT_7:
-            num_of_rx_bytes=45544*2; //22888 -- 45544
+            num_of_rx_bytes=45544*2;
             break;
         case SPLIT_7_1:
-            num_of_rx_bytes=45544*2; //22888 -- 45544
+            num_of_rx_bytes=45544*2;
             break;
         case SPLIT_7_2:
             num_of_rx_bytes=radio_parameters->ofdm.num_sc*radio_parameters->ofdm.NumOFDMSyms*2*2;
@@ -141,50 +178,41 @@ int main() {
         default:
             num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
     }
+    //Load data to send
+    std::string filename;
+    switch(tx_split){
+        case SPLIT_7:
+            filename  = experiments_folder +  "/slotFR2_CH1_7_TX1.txt";
+            break;
+        case SPLIT_7_1: //este paquete tenia un padding de 0s que hacia que no funcionase
+            filename  = experiments_folder + "/slotFR2_CH1_7.1_TX1.txt";
+            break;
+        case SPLIT_7_2:
+            filename  = experiments_folder +  "/slotFR2_CH1_7.2_TX1.txt";
+            break;
+        case SPLIT_8:
+            filename  = experiments_folder +  "/slotFR2_CH1_8_TX1.txt";
+            break;
+        default:
+            filename  = experiments_folder +  "/slotFR2_CH1_7_TX1.txt";
+    }
+
+
+    std::vector<int16_t> tx_data=load_waveform_from_file(filename);
+    usleep(1000);
 
     auto* radio_config=radio.control->get_radio_config();
     mimorph::slot_str rx_data(num_of_rx_bytes,radio_config->ofdm.num_sc*4);
 
-    int n_packets=10;
+    //std::cout << "Starting experiment as Receiver: " << std::endl;
     int n_recv_pkts=0;
-    int n_ce_err=0;
-
-    std::cout << "Starting experiment as Receiver: " << std::endl;
-
-
-    while(1){
+    while(n_recv_pkts<10000){
         radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);
         if(!rx_data.data.empty()) {
-            std::cout << "Packet received. Number of bytes " << rx_data.data.size() << std::endl;
-            rx_data.data.clear();
-            rx_data.data.resize(num_of_rx_bytes);
-            break;
-        }
-        usleep(100);
-        rx_data.data.resize(num_of_rx_bytes);
-        for (int i = 0; i < 1; ++i) {
-            rx_data.data.resize(num_of_rx_bytes);
-        }
-    }
-
-    auto start = std::chrono::high_resolution_clock::now();
-    for(int i=0;i<n_packets;i++){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false, false,false);
-        if(!rx_data.data.empty()){
             n_recv_pkts++;
+            radio.stream->transmit(tx_data.data(),tx_data.size()*2);
         }
         rx_data.data.clear();
         rx_data.data.resize(num_of_rx_bytes);
     }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
-
-    int bytes_per_slot=1345; //5122 -- 2688 -- 2496 -- 1345
-
-    auto tp = static_cast<double>(1.0*(n_recv_pkts)*bytes_per_slot*8/ duration.count());
-    std::cout << "Recv packets: " << n_recv_pkts << "/" << n_packets << std::endl;
-    std::cout << "Measured throughput is : " << tp << "Mbps" << std::endl;
-    return 1;
 }

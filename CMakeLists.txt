@@ -56,3 +56,15 @@ target_link_libraries(throughput_experiments_rx
 
 target_link_libraries(radio_example
         MIMORPH_RT)
+add_executable(latency examples/measure_latency_rx.cpp
+        examples/helpers.cpp
+        examples/helpers.h)
+target_link_libraries(latency
+        MIMORPH_RT)
+add_executable(sensing_app examples/sensing_app.cpp
+        examples/helpers.cpp
+        examples/helpers.h
+)
+
+target_link_libraries(sensing_app
+        MIMORPH_RT)
