@@ -26,7 +26,7 @@ void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split, int
     radio.control->set_rx_split_config(radio_config->rx_split);
 
     //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_DIV_2);
+    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_DIV_4);
 
     radio_config->ofdm.OFDM_Bypass=false;
     radio_config->ofdm.CP1=400;
@@ -114,7 +114,7 @@ int main() {
     radio.control->set_streaming_param(stream_config);
 
     //low 318 -- med 490 -- high 768 -- vh 921 // 73 and 145 RE //21867 -- 10527
-    configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,145,MOD_QPSK,490.0/1024, 21867);
+    configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,145,MOD_256QAM,490.0/1024, 21867);
     auto radio_parameters=radio.control->get_radio_config();
 
     //Set the frequency bands of the different converters
@@ -181,7 +181,7 @@ int main() {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
 
-    int bytes_per_slot=1345; //5122 -- 2688 -- 2496 -- 1345
+    int bytes_per_slot=radio_config->tbs/8; //5122 -- 2688 -- 2496 -- 1345
 
     auto tp = static_cast<double>(1.0*(n_recv_pkts)*bytes_per_slot*8/ duration.count());
     std::cout << "Recv packets: " << n_recv_pkts << "/" << n_packets << std::endl;

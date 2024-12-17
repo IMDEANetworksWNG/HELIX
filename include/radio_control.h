@@ -73,11 +73,11 @@ namespace mimorph {
         dmrs_str            equalization;
         ssb_sync_str        synchronization;
         ofdm_str            ofdm;
-        uint16_t            tbs;
-        uint16_t            num_sch_sym;
+        uint32_t            tbs;
+        uint32_t            num_sch_sym;
         uint16_t            mod_order;
         uint16_t            offsetSSB;
-        uint16_t            ldpc_segmented_length;
+        uint32_t            ldpc_segmented_length;
         float               ifs; //inter-frame spacing at tx
         float               code_rate; //inter-frame spacing at tx
     };

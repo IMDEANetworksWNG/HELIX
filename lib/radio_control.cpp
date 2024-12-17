@@ -130,7 +130,7 @@ void radio_control::set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, d
 }
 
 void radio_control::set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order) {
-    cmdManager->writeReg(RX_DEMAP_ADDR,ceil((num_blocks*mod_order/4.0)));
+    cmdManager->writeReg(RX_DEMAP_ADDR+0x10,mod_order);
 }
 
 void radio_control::set_rx_ldcp_param(ldpc_info params) {
