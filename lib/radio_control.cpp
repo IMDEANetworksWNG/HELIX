@@ -69,10 +69,16 @@ void radio_control::set_tx_ofdm_param(ofdm_str params) {
         cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,true);
 }
 
-    void radio_control::set_tx_nrPDSCH(uint16_t mod_order, uint32_t num_bits, uint32_t left_bits){
+    void radio_control::set_tx_nrPDSCH(uint16_t mod_order, uint32_t num_sch_sym){
+        int leftover=0;
+        int padblock=0;
+        if ((num_sch_sym*mod_order) % SSR_NR_PDSCH > 0){
+            leftover = (num_sch_sym*mod_order) % SSR_NR_PDSCH;
+            padblock = SSR_NR_PDSCH-leftover ;
+        }
         cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x10,mod_order);
-        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x18,num_bits/64);
-        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x20,left_bits);
+        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x18,(num_sch_sym*mod_order + padblock)/64);
+        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x20,leftover);
     }
 
 void radio_control::set_tx_filter_param(bool bw, float ifs) {

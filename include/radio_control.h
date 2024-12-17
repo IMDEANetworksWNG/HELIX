@@ -92,7 +92,7 @@ namespace mimorph {
         void set_tx_filter_param(bool bw, float ifs);
         void set_tx_lbm_param(uint32_t size);
         void set_tx_buildGrid_param(ofdm_str ofdm_params, ptrs_str ptrs_params, dmrs_str dmrs_params, uint16_t offsetSSB);
-        void set_tx_nrPDSCH(uint16_t mod_order, uint32_t num_bits, uint32_t left_bits);
+        void set_tx_nrPDSCH(uint16_t mod_order, uint32_t num_sch_sym);
         void set_tx_split_config(uint8_t split);
 
         void set_rx_cfo_correction_param(bool bw, bool enable, uint8_t scaling);
