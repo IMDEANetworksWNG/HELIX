@@ -158,13 +158,13 @@ int main() {
     //Load data to send
     std::string filename;
     switch(tx_split){
-        case SPLIT_7:
+        case SPLIT_7_3:
             filename  = experiments_folder +  "/slotFR2_CH1_7_TX1.txt";
             break;
-        case SPLIT_7_1: //este paquete tenia un padding de 0s que hacia que no funcionase
+        case SPLIT_7_2: //este paquete tenia un padding de 0s que hacia que no funcionase
             filename  = experiments_folder + "/slotFR2_CH1_7.1_TX1.txt";
             break;
-        case SPLIT_7_2:
+        case SPLIT_7_2x:
             filename  = experiments_folder +  "/slotFR2_CH1_7.2_TX1.txt";
             break;
         case SPLIT_8:
@@ -179,13 +179,13 @@ int main() {
         case SPLIT_6:
             num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
             break;
-        case SPLIT_7:
-            num_of_rx_bytes=45544*2;
-            break;
-        case SPLIT_7_1:
+        case SPLIT_7_3:
             num_of_rx_bytes=45544*2;
             break;
         case SPLIT_7_2:
+            num_of_rx_bytes=45544*2;
+            break;
+        case SPLIT_7_2x:
             num_of_rx_bytes=radio_parameters->ofdm.num_sc*radio_parameters->ofdm.NumOFDMSyms*2*2;
             break;
         case SPLIT_8:

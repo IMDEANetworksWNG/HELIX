@@ -11,7 +11,7 @@ const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 //const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 const std::string  experiments_folder = "/home/rafael/MOBISYS25/MATLAB/";
 const std::string  subfolder = "/CAPTURED_DATA/BER_256QAM/MED_RATE/26dB_SNR/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
-const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7", "SPLIT7_1", "SPLIT7_2", "SPLIT8"};
+const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<mimorph::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -106,7 +106,7 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
-    uint8_t rx_split=SPLIT_7;
+    uint8_t rx_split=SPLIT_8;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss=1024*8;
@@ -127,13 +127,13 @@ int main() {
         case SPLIT_6:
             num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
             break;
-        case SPLIT_7:
+        case SPLIT_7_3:
             num_of_rx_bytes=radio_parameters->num_sch_sym*4*4; //radio_parameters->num_sch_sym*radio_parameters->mod_order*2//87468*2 //45544*2 //you can put a switch here to choose depending on the mod
             break;
-        case SPLIT_7_1:
+        case SPLIT_7_2:
             num_of_rx_bytes=87468; //87468*2
             break;
-        case SPLIT_7_2:
+        case SPLIT_7_2x:
             num_of_rx_bytes=97440;
             break;
         case SPLIT_8:
@@ -151,7 +151,7 @@ int main() {
 
     bool enable_snr=false;
     bool enable_ce= false;
-    if(rx_split==SPLIT_6 | rx_split==SPLIT_7) enable_snr= true;
+    if(rx_split==SPLIT_6 | rx_split==SPLIT_7_3) enable_snr= true;
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
 

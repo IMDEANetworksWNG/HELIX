@@ -118,7 +118,7 @@ int main() {
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
     mimorph::stream_str stream_config{};
 
-    uint8_t tx_split=SPLIT_7;
+    uint8_t tx_split=SPLIT_7_3;
     uint8_t rx_split=SPLIT_6;
 
     //set udp ifg and mss
@@ -140,13 +140,13 @@ int main() {
     //Load data to send
     std::string filename;
     switch(tx_split){
-        case SPLIT_7:
+        case SPLIT_7_3:
             filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.15/slotFR2_CH1_SP7_TX1.txt";
             break;
-        case SPLIT_7_1: //este paquete tenia un padding de 0s que hacia que no funcionase
+        case SPLIT_7_2: //este paquete tenia un padding de 0s que hacia que no funcionase
             filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.08/slotFR2_CH1_7.1_TX1.txt";
             break;
-        case SPLIT_7_2:
+        case SPLIT_7_2x:
             filename  = "/home/rafael/MATLAB/PROJECT_5G_PHASE4/Matlab/GEN_DATA/2024.10.15/slotFR2_CH1_SP7.2_TX1.txt";
             break;
         case SPLIT_8:
@@ -168,13 +168,13 @@ int main() {
         case SPLIT_6:
             num_of_rx_bytes=2904;
             break;
-        case SPLIT_7:
-            num_of_rx_bytes=45544*2;
-            break;
-        case SPLIT_7_1:
+        case SPLIT_7_3:
             num_of_rx_bytes=45544*2;
             break;
         case SPLIT_7_2:
+            num_of_rx_bytes=45544*2;
+            break;
+        case SPLIT_7_2x:
             num_of_rx_bytes=97440;
             break;
         case SPLIT_8:

@@ -126,13 +126,13 @@ int main() {
         case SPLIT_6:
             num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
             break;
-        case SPLIT_7:
-            num_of_rx_bytes=45544*2; //22888 -- 45544
-            break;
-        case SPLIT_7_1:
+        case SPLIT_7_3:
             num_of_rx_bytes=45544*2; //22888 -- 45544
             break;
         case SPLIT_7_2:
+            num_of_rx_bytes=45544*2; //22888 -- 45544
+            break;
+        case SPLIT_7_2x:
             num_of_rx_bytes=radio_parameters->ofdm.num_sc*radio_parameters->ofdm.NumOFDMSyms*2*2;
             break;
         case SPLIT_8:

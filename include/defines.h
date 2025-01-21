@@ -72,9 +72,9 @@
 #define UDP_CMD_FAILED  3
 
 #define SPLIT_6 	1
-#define SPLIT_7 	2
-#define SPLIT_7_1 	3
-#define SPLIT_7_2 	4
+#define SPLIT_7_3 	2
+#define SPLIT_7_2 	3
+#define SPLIT_7_2x 	4
 #define SPLIT_8	 	5
 
 #define SCALING_NVAR 1.1161
