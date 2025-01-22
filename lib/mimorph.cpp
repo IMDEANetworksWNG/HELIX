@@ -13,7 +13,7 @@ namespace mimorph {
         udp= new udp_transport(ip,UDP_DATA_PORT,UDP_CONTROL_PORT,UDP_METADATA_PORT);
         cmd = new cmd_manager(udp);
         stream = new streamer(udp, cmd);
-        control= new radio_control(cmd);
+        control= new radio_control(cmd, stream);
 
         //This command will reset the TX and RX blocks
         if(!control->init_platform()){
