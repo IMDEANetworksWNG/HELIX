@@ -18,84 +18,6 @@ std::vector<mimorph::converter_conf> create_conv_conf(){
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
 
-
-void configure_rx_blocks(mimorph::mimorph& radio, bool bw, uint8_t rx_split, int num_resource_elements, int mod_order, float rate, int num_psch_symbs){
-
-    auto* radio_config=radio.control->get_radio_config();
-    radio_config->bw=bw;
-
-    radio_config->rx_split=rx_split;
-    radio.control->set_rx_split_config(radio_config->rx_split);
-
-    //cfo correction
-    radio.control->set_rx_cfo_correction_param(radio_config->bw,true,SCALE_FACTOR_DIV_8);
-
-    radio_config->ofdm.OFDM_Bypass=false;
-    radio_config->ofdm.CP1=400;
-    radio_config->ofdm.CP2=144;
-    radio_config->ofdm.NumOFDMSyms=14;
-    radio_config->ofdm.N_RE=num_resource_elements; //72 145
-    radio_config->ofdm.num_sc=radio_config->ofdm.N_RE*12;
-    radio_config->ofdm.nullSC=2048-radio_config->ofdm.num_sc;
-    radio.control->set_rx_ofdm_param(radio_config->ofdm);
-
-    if ((radio_config->ofdm.num_sc/12) % 2 == 0)
-        radio_config->offsetSSB = 0;
-    else
-        radio_config->offsetSSB = 6;
-
-    //filter configuration
-    radio.control->set_rx_filter_param(radio_config->bw);
-
-    //configure ssb block
-    radio_config->synchronization.ssb_sync=10447;
-    radio_config->synchronization.slot_len=30944;
-    radio.control->set_rx_ssb_param(bw,radio_config->synchronization);
-
-    //configure channel estimation block
-    radio_config->equalization.offset=0;
-    radio_config->equalization.scs=6;
-    radio_config->equalization.symbol_index=3;
-    radio_config->equalization.num_sc_virtual=(radio_config->ofdm.num_sc+22); //this variable is adding 22 "virtual" sc to the sides
-
-    int num_dmrs=(radio_config->ofdm.N_RE)*NUM_DMRS_PER_RB;
-    int value = static_cast<int>(std::round(1.0/num_dmrs * std::pow(2, 15)));
-    radio_config->equalization.inv_num_dmrs=value;
-
-    value = static_cast<int>(std::round(SCALING_NVAR/(num_dmrs-1) * std::pow(2, 15)));
-    radio_config->equalization.scaling_nVar=value;
-    radio.control->set_rx_ce_param(radio_config->equalization);
-
-    //configure equalization block
-    radio.control->set_rx_eq_param(radio_config->ofdm);
-
-    //configure phase tracking block
-    radio_config->phase_tracking.offset=0;
-    radio_config->phase_tracking.scs=12*2;
-    radio_config->phase_tracking.even=false;
-    radio_config->phase_tracking.SSB_index[0]=751-radio_config->equalization.scs-1;
-    radio_config->phase_tracking.SSB_index[1]=990+radio_config->equalization.scs;
-
-    radio_config->phase_tracking.SSB_symbols[0]=9;
-    radio_config->phase_tracking.SSB_symbols[1]=10;
-    radio_config->phase_tracking.SSB_symbols[2]=11;
-    radio_config->phase_tracking.SSB_symbols[3]=12;
-    radio.control->set_rx_phase_tracking_param(bw,radio_config->phase_tracking,radio_config->equalization,radio_config->ofdm);
-
-    radio_config->tbs= getTBS(mod_order,num_resource_elements,rate);
-
-    //configure demapper
-    radio_config->num_sch_sym=num_psch_symbs;
-    radio_config->mod_order = mod_order;
-    radio.control->set_rx_demap_param(radio_config->num_sch_sym, radio_config->mod_order);
-
-    //configure ldpc decoder
-    radio_config->code_rate= rate;
-    auto ldpc_config = get_LDPC_config(radio_config->tbs, radio_config->code_rate,radio_config->num_sch_sym*radio_config->mod_order,radio_config->mod_order);
-    radio_config->ldpc_segmented_length= ldpc_config.K*ldpc_config.C;
-    radio.control->set_rx_ldcp_param(ldpc_config);
-}
-
 int main() {
     //set task priority
     set_scheduler_options();
@@ -107,6 +29,10 @@ int main() {
     mimorph::stream_str stream_config{};
 
     uint8_t rx_split=SPLIT_6;
+    uint8_t tx_split = SPLIT_7_2;
+    uint8_t n_re = 100;
+    float rate = 490.0/1024;
+    uint8_t mod_order = MOD_QPSK;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss=1024*8;
@@ -114,36 +40,19 @@ int main() {
 
     radio.control->set_streaming_param(stream_config);
 
-    //configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,73,MOD_QPSK,490.0/1024, 10527);
-    configure_rx_blocks(radio,BW_MODE_HIGH,rx_split,145,MOD_QPSK,490.0/1024, 21867);
-    auto radio_parameters=radio.control->get_radio_config();
+    //Configure the transmitter and receiver blocks and split functionalities
+    radio.control->configure_radio(rx_split,tx_split, BW_MODE_HIGH,
+                                   n_re, mod_order, rate, 0);
+
 
     //Set the frequency bands of the different converters
     std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
-    int num_of_rx_bytes;
-    switch(rx_split){
-        case SPLIT_6:
-            num_of_rx_bytes=radio_parameters->ldpc_segmented_length/8;
-            break;
-        case SPLIT_7_3:
-            num_of_rx_bytes=45544*2;
-            break;
-        case SPLIT_7_2:
-            num_of_rx_bytes=45544*2;
-            break;
-        case SPLIT_7_2x:
-            num_of_rx_bytes=97440;
-            break;
-        case SPLIT_8:
-            num_of_rx_bytes=15474*8;
-            break;
-        default:
-            num_of_rx_bytes=2904;
-    }
+    uint32_t num_rx_bytes_slot=radio.control->get_num_of_rx_bytes(rx_split);
 
-    mimorph::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
+    auto* radio_config=radio.control->get_radio_config();
+    mimorph::slot_str rx_data(num_rx_bytes_slot,radio_config->ofdm.num_sc*4);
 
     int n_packets=40000; //40000 with ifs of 0.5ms will be 20s
     bool enable_ce= true;
@@ -153,27 +62,27 @@ int main() {
     std::cout << "Starting experiment as Receiver: " << std::endl;
     rx_data.channel_estimation.clear();
     while(1){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,false,false);
+        radio.stream->receive(&rx_data,num_rx_bytes_slot,enable_ce,false,false);
         if(!rx_data.data.empty()) {
             std::cout << "First packet received. Number of bytes " << rx_data.data.size() << std::endl;
             cest_data[0]=rx_data.channel_estimation;
             rx_data.channel_estimation.clear();
-            rx_data.channel_estimation.resize(radio_parameters->ofdm.num_sc*4);
+            rx_data.channel_estimation.resize(radio_config->ofdm.num_sc*4);
             break;
         }
         usleep(100);
-        rx_data.data.resize(num_of_rx_bytes);
+        rx_data.data.resize(num_rx_bytes_slot);
         for (int i = 0; i < 1; ++i) {
-            rx_data.data.resize(num_of_rx_bytes);
+            rx_data.data.resize(num_rx_bytes_slot);
         }
     }
     for(int i=0;i<n_packets;i++){
-        radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,false,false);
+        radio.stream->receive(&rx_data,num_rx_bytes_slot,enable_ce,false,false);
         cest_data[i]=rx_data.channel_estimation;
         rx_data.channel_estimation.clear();
-        rx_data.channel_estimation.resize(radio_parameters->ofdm.num_sc*4);
+        rx_data.channel_estimation.resize(radio_config->ofdm.num_sc*4);
         rx_data.data.clear();
-        rx_data.data.resize(num_of_rx_bytes);
+        rx_data.data.resize(num_rx_bytes_slot);
     }
 
     // Flattened vector
