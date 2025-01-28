@@ -11,7 +11,7 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
-
+#include "../include/defines.h"
 
 
 bool check_data(uint8_t * received_data, uint8_t* sent_data, int num_bytes){
@@ -99,6 +99,46 @@ void writeBinaryFileDouble(const std::string &filename, const std::vector<double
 
     // Close the file
     file.close();
+}
+
+std::string get_waveform_filename(uint8_t mod_order, uint8_t n_re, float rate, uint8_t split){
+    std::string filename;
+    std::to_string(mod_order);
+    switch (mod_order) {
+        case MOD_QPSK:
+            filename = "/QPSK/";
+            break;
+        case MOD_16QAM:
+            filename = "/16_QAM";
+            break;
+        case MOD_64QAM:
+            filename = "/64_QAM";
+            break;
+        case MOD_256QAM:
+            filename = "/256_QAM";
+            break;
+    }
+
+    filename = filename + "N_RE_" + std::to_string(n_re) + "_RATE_" + std::to_string(static_cast<uint>(rate*1024));
+
+    switch (split) {
+        case SPLIT_7_3:
+            filename = filename + "/slotFR2_CH1_7.3_TX1.txt";
+            break;
+        case SPLIT_7_2: //careful with the sample generation. It has a bug related to the zero padding
+            filename = filename + "/slotFR2_CH1_7.2_TX1.txt";
+            break;
+        case SPLIT_7_2x:
+            filename = filename + "/slotFR2_CH1_7.2x_TX1.txt";
+            break;
+        case SPLIT_8:
+            filename = filename + "/slotFR2_CH1_8_TX1.txt";
+            break;
+        case SSB_FILE:
+            filename = filename + "/slotFR2_CH1_SSB_TX1.txt";
+            break;
+    }
+    return  filename;
 }
 
 

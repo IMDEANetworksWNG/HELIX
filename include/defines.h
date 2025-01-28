@@ -76,6 +76,7 @@
 #define SPLIT_7_2 	3
 #define SPLIT_7_2x 	4
 #define SPLIT_8	 	5
+#define SSB_FILE 	6
 
 #define SCALING_NVAR 1.1161
 #define NUM_DMRS_PER_RB_TYPE_1 6

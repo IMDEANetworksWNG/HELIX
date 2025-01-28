@@ -18,6 +18,7 @@ void set_scheduler_options();
 std::vector<int16_t> load_waveform_from_file(const std::string& filename);
 void remove_ldpc_padding(std::vector<uint8_t>* rx_data);
 int getTBS(int mod_order,int nPRB, double R);
+std::string get_waveform_filename(uint8_t mod_order, uint8_t n_re, float rate, uint8_t split);
 
 #endif //MIMORPH_RT_HELPERS_H
 

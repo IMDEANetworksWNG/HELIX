@@ -282,13 +282,13 @@ uint32_t radio_control::get_num_of_rx_bytes(uint8_t split) {
                     num_of_rx_bytes=(radio_config.num_ptrs+radio_config.num_sch)*4;
                     break;
                 case MOD_16QAM:
-                    num_of_rx_bytes=(radio_config.num_sch)*16;
+                    num_of_rx_bytes=(radio_config.num_sch+4)*8;
                     break;
                 case MOD_64QAM:
-                    num_of_rx_bytes=(radio_config.num_sch)*32;
+                    num_of_rx_bytes=(radio_config.num_sch+4)*16;
                     break;
                 case MOD_256QAM:
-                    num_of_rx_bytes=(radio_config.num_sch)*32;
+                    num_of_rx_bytes=(radio_config.num_sch+4)*16;
                     break;
             }
             break;
@@ -319,6 +319,8 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
     radio_config.ofdm.num_sc=radio_config.ofdm.N_RE*SUBCARRIERS_PER_RE;
     radio_config.ofdm.nullSC=2048-radio_config.ofdm.num_sc;
 
+    radio_config.grid_size=radio_config.ofdm.num_sc*radio_config.ofdm.num_OFDM_syms;
+
     if ((radio_config.ofdm.num_sc/12) % 2 == 0)
         radio_config.offsetSSB = 0;
     else
@@ -326,7 +328,7 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
     
 
     //configure ssb block
-    radio_config.num_ssb= SSB_BLOCK_RE*SSB_BLOCK_NUM_SYMBOLS*SUBCARRIERS_PER_RE+(radio_config.offsetSSB*2);
+    radio_config.num_ssb= SSB_BLOCK_RE*SSB_BLOCK_NUM_SYMBOLS*SUBCARRIERS_PER_RE+(radio_config.offsetSSB*2)*SSB_BLOCK_NUM_SYMBOLS;
     radio_config.synchronization.ssb_sync=10447;
     radio_config.synchronization.slot_len=30944;
 
@@ -345,12 +347,15 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
     radio_config.equalization.scaling_nVar=value;
 
     //configure phase tracking block
-    radio_config.num_ptrs=ceil(static_cast<double>(radio_config.ofdm.N_RE/2.0))*(radio_config.ofdm.num_OFDM_syms-DMRS_SYM_LENGTH-SSB_BLOCK_NUM_SYMBOLS)+ceil((radio_config.ofdm.N_RE-SSB_BLOCK_RE)/2.0)*SSB_BLOCK_NUM_SYMBOLS;
+    radio_config.num_ptrs=ceil(static_cast<double>(radio_config.ofdm.N_RE/2.0))*(radio_config.ofdm.num_OFDM_syms-DMRS_SYM_LENGTH-SSB_BLOCK_NUM_SYMBOLS)+ceil((radio_config.ofdm.N_RE-SSB_BLOCK_RE-1)/2.0)*SSB_BLOCK_NUM_SYMBOLS;
     radio_config.phase_tracking.offset=0;
     radio_config.phase_tracking.scs=SUBCARRIERS_PER_RE*2;
     radio_config.phase_tracking.even=false;
-    radio_config.phase_tracking.SSB_index[0]=751-radio_config.equalization.scs-1;
-    radio_config.phase_tracking.SSB_index[1]=990+radio_config.equalization.scs;
+
+    radio_config.phase_tracking.SSB_index[0]=(radio_config.ofdm.num_sc/2)-(SSB_BLOCK_RE*SUBCARRIERS_PER_RE/2)-radio_config.offsetSSB;
+    radio_config.phase_tracking.SSB_index[1]=(radio_config.ofdm.num_sc/2)+(SSB_BLOCK_RE*SUBCARRIERS_PER_RE/2)+radio_config.offsetSSB;
+/*    radio_config.phase_tracking.SSB_index[0]=751-1-radio_config.offsetSSB;
+    radio_config.phase_tracking.SSB_index[1]=990+radio_config.offsetSSB;*/
 
     radio_config.phase_tracking.SSB_symbols[0]=9;
     radio_config.phase_tracking.SSB_symbols[1]=10;
@@ -360,7 +365,6 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
     radio_config.tbs= getTBS(mod_order,num_resource_elements,rate);
 
     //configure demapper
-    radio_config.grid_size=radio_config.ofdm.num_sc*radio_config.ofdm.num_OFDM_syms;
     radio_config.num_sch= radio_config.grid_size-radio_config.num_dmrs-radio_config.num_ptrs-radio_config.num_ssb;
     radio_config.mod_order = mod_order;
     //configure ldpc decoder
