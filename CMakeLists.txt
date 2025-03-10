@@ -19,11 +19,6 @@ add_library(MIMORPH_RT
         include/ldpc_configuration.h
         lib/ldpc_configuration.cpp
 )
-add_executable(radio_example examples/radio_example.cpp
-        lib/ldpc_configuration.cpp
-        include/ldpc_configuration.h
-        examples/helpers.h
-        examples/helpers.cpp)
 
 add_executable(sinewave_example examples/sinewave_example.cpp
         examples/helpers.h
@@ -54,8 +49,6 @@ target_link_libraries(throughput_experiments_rx
         MIMORPH_RT)
 
 
-target_link_libraries(radio_example
-        MIMORPH_RT)
 add_executable(latency examples/measure_latency_rx.cpp
         examples/helpers.cpp
         examples/helpers.h)
@@ -68,3 +61,10 @@ add_executable(sensing_app examples/sensing_app.cpp
 
 target_link_libraries(sensing_app
         MIMORPH_RT)
+add_executable(loopback examples/loopback_test.cpp
+        examples/helpers.cpp
+        examples/helpers.h
+)
+target_link_libraries(loopback
+        MIMORPH_RT)
+

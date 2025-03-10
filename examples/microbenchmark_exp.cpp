@@ -39,7 +39,7 @@ int main() {
 
     //Configure the transmitter and receiver blocks and split functionalities
     radio.control->configure_radio(rx_split,SPLIT_8, BW_MODE_HIGH,
-                                   100, MOD_QPSK, 490.0/1024, 0);
+                                   145, MOD_QPSK, 490.0/1024, 0);
     auto radio_parameters=radio.control->get_radio_config();
 
     //Set the frequency bands of the different converters
@@ -59,6 +59,7 @@ int main() {
     if(rx_split==SPLIT_6 | rx_split==SPLIT_7_3) enable_snr= true;
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
+    radio.control->enable_rx_radio(true);
 
     while(1){
         radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,enable_snr,false);
@@ -93,6 +94,7 @@ int main() {
         rx_data.data.resize(num_of_rx_bytes);
     }
 
+    radio.control->enable_rx_radio(false);
     if(rx_split<SPLIT_7_2){
         std::string side_info_fn = experiments_folder + subfolder + split_string[rx_split-1] + "/SNR_values.bin";
         std::vector<double> SNR_values;

@@ -98,12 +98,13 @@ namespace mimorph {
         }
     }
 
+    //Only working for split 6 or below 8000 bytes packet
     void streamer::transmit(const std::vector<std::vector<int16_t>>& data, ssize_t num_bytes_per_slot){
         ssize_t total_bytes=data.size()*num_bytes_per_slot;
         if(triggerTX(total_bytes)){
             for (auto slot : data) {
                 udp->data_socket.send(slot.data(),num_bytes_per_slot);
-                usleep(5);
+                usleep(1);
             }
             return;
         }

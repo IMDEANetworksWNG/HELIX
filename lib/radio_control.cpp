@@ -26,42 +26,42 @@ static int getTBSFromTable(int NdInfo) {
 }
 
 static int getTBS(const int mod_order,const int nPRB, const double R) {
-        // Number of codewords
-        int NREPerPRB=164;
+    // Number of codewords
+    int NREPerPRB=164;
 
-        double NREPrime = double(NREPerPRB) - 6; //ptrs overhead
-        int NRE = std::min(156.0,NREPrime)*double(nPRB);
+    double NREPrime = double(NREPerPRB) - 6; //ptrs overhead
+    int NRE = std::min(156.0,NREPrime)*double(nPRB);
 
-        int tbs=0;
+    int tbs=0;
 
-        int Ninfo=mod_order*NRE*R;
+    int Ninfo=mod_order*NRE*R;
 
-        if (Ninfo <= 3824) {
-            int n = std::max(3, static_cast<int>(std::floor(std::log2(Ninfo)) - 6));
-            // Calculate quantized intermediate number of information bits (Nd_info)
-            int NdInfo = std::max(24, (1 << n) * (Ninfo / (1 << n)));
-            // Get the TBS value using TS 38.214 Table 5.1.3.2-1
-            tbs = getTBSFromTable(NdInfo);
+    if (Ninfo <= 3824) {
+        int n = std::max(3, static_cast<int>(std::floor(std::log2(Ninfo)) - 6));
+        // Calculate quantized intermediate number of information bits (Nd_info)
+        int NdInfo = std::max(24, (1 << n) * (Ninfo / (1 << n)));
+        // Get the TBS value using TS 38.214 Table 5.1.3.2-1
+        tbs = getTBSFromTable(NdInfo);
+    } else {
+        int n = static_cast<int>(std::floor(std::log2(Ninfo - 24)) - 5);
+        // Calculate quantized intermediate number of information bits (Nd_info)
+        int NdInfo = std::max(3840, (1 << n) * static_cast<int>(std::round((Ninfo - 24.0) / (1 << n))));
+        int C = 0;
+        if (R <= 1.0 / 4.0) {
+            C = std::ceil((NdInfo + 24.0) / 3816.0);
         } else {
-            int n = static_cast<int>(std::floor(std::log2(Ninfo - 24)) - 5);
-            // Calculate quantized intermediate number of information bits (Nd_info)
-            int NdInfo = std::max(3840, (1 << n) * static_cast<int>(std::round((Ninfo - 24.0) / (1 << n))));
-            int C = 0;
-            if (R <= 1.0 / 4.0) {
-                C = std::ceil((NdInfo + 24.0) / 3816.0);
+            if (NdInfo > 8424) {
+                C = std::ceil((NdInfo + 24.0) / 8424.0);
             } else {
-                if (NdInfo > 8424) {
-                    C = std::ceil((NdInfo + 24.0) / 8424.0);
-                } else {
-                    C = 1;
-                }
+                C = 1;
             }
-            // Calculate TBS
-            tbs = 8 * C * std::ceil((NdInfo + 24.0) / (8.0 * C)) - 24;
         }
-
-        return tbs;
+        // Calculate TBS
+        tbs = 8 * C * std::ceil((NdInfo + 24.0) / (8.0 * C)) - 24;
     }
+
+    return tbs;
+}
 
 
 void radio_control::set_streaming_param(stream_str params) {
@@ -100,41 +100,41 @@ void radio_control::set_tx_ofdm_param(ofdm_str params) {
     cmdManager->writeReg(TX_OFDM_MOD_ADDR+0x4,value);
 }
 
-    void radio_control::set_tx_lbm_param(uint32_t size){
-        int lookupTable[8] = {6, 0, 0, 2, 2, 4, 4, 6};
-        int rem_samples = lookupTable[size%8];
-        uint32_t value= (size/16) | (rem_samples)<<16;
-        cmdManager->writeReg(TX_LBM_ADDR,value);
-    }
-
-    void radio_control::set_tx_buildGrid_param(ofdm_str ofdm_params, ptrs_str ptrs_params, dmrs_str dmrs_params, uint16_t offsetSSB){
-
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,false); //First configure the block and after enable the block
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x10,dmrs_params.symbol_index-1); // Tx support more than one DMRS symbol in the slot. But Rx support only one.
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x18,dmrs_params.symbol_index-1); // Repeat the symbol if there is only one DM-RS in the slot
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x20,ptrs_params.SSB_symbols[0]-1-1); //First symbol with SSB -2
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x28,ptrs_params.SSB_symbols[3]); //Last symbol with SSB
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x30,ofdm_params.num_sc-2-2); //Number of used subcarriers in the OFDM symbol
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x38,ofdm_params.num_OFDM_syms-1); //Number of OFDM symbols in the slot -1
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x40,dmrs_params.scs/2-1);
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x48,dmrs_params.offset); //Location of the first DMRS subcarrier in the slot
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x50,ptrs_params.offset); //Location of the first PTRS subcarrier in the slot (FIXED)
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x58,ptrs_params.SSB_index[0]-2);
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x60,ptrs_params.SSB_index[1]);
-        cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,true);
+void radio_control::set_tx_lbm_param(uint32_t size){
+    int lookupTable[8] = {6, 0, 0, 2, 2, 4, 4, 6};
+    int rem_samples = lookupTable[size%8];
+    uint32_t value= (size/16) | (rem_samples)<<16;
+    cmdManager->writeReg(TX_LBM_ADDR,value);
 }
 
-    void radio_control::set_tx_symbol_map_param(uint16_t mod_order, uint32_t num_sch){
-        int leftover=0;
-        int padblock=0;
-        if ((num_sch*mod_order) % SSR_NR_PDSCH > 0){
-            leftover = (num_sch*mod_order) % SSR_NR_PDSCH;
-            padblock = SSR_NR_PDSCH-leftover ;
-        }
-        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x10,mod_order);
-        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x18,(num_sch*mod_order + padblock)/64);
-        cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x20,leftover);
+void radio_control::set_tx_buildGrid_param(ofdm_str ofdm_params, ptrs_str ptrs_params, dmrs_str dmrs_params, uint16_t offsetSSB){
+
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,false); //First configure the block and after enable the block
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x10,dmrs_params.symbol_index-1); // Tx support more than one DMRS symbol in the slot. But Rx support only one.
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x18,dmrs_params.symbol_index-1); // Repeat the symbol if there is only one DM-RS in the slot
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x20,ptrs_params.SSB_symbols[0]-1-1); //First symbol with SSB -2
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x28,ptrs_params.SSB_symbols[3]); //Last symbol with SSB
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x30,ofdm_params.num_sc-2-2); //Number of used subcarriers in the OFDM symbol
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x38,ofdm_params.num_OFDM_syms-1); //Number of OFDM symbols in the slot -1
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x40,dmrs_params.scs/2-1);
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x48,dmrs_params.offset); //Location of the first DMRS subcarrier in the slot
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x50,ptrs_params.offset); //Location of the first PTRS subcarrier in the slot (FIXED)
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x58,ptrs_params.SSB_index[0]-2);
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x60,ptrs_params.SSB_index[1]);
+    cmdManager->writeReg(TX_BUILD_GRID_ADDR+0x68,true);
+}
+
+void radio_control::set_tx_symbol_map_param(uint16_t mod_order, uint32_t num_sch){
+    int leftover=0;
+    int padblock=0;
+    if ((num_sch*mod_order) % SSR_NR_PDSCH > 0){
+        leftover = (num_sch*mod_order) % SSR_NR_PDSCH;
+        padblock = SSR_NR_PDSCH-leftover ;
     }
+    cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x10,mod_order);
+    cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x18,(num_sch*mod_order + padblock)/64);
+    cmdManager->writeReg(TX_NR_PDSCH_ADDR+0x20,leftover);
+}
 
 void radio_control::set_tx_filter_param(bool bw, float ifs) {
     cmdManager->writeReg(TX_UPSAMPLING_ADDR,static_cast<uint32_t>(ifs*SAMPLING_CLK_DAC));
@@ -177,9 +177,14 @@ void radio_control::set_rx_eq_param(ofdm_str params) {
     cmdManager->writeReg(RX_EQ_ADDR,value);
 }
 
+void radio_control::set_rx_agc_param(bool enable, int vref) {
+    uint32_t value = vref | enable<<31;
+    cmdManager->writeReg(RX_AGC_ADDR,value);
+}
+
 void radio_control::set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, dmrs_str dmrs_params, ofdm_str ofdm_params) {
     uint32_t value = (dmrs_params.scs/SSR_ADC-dmrs_params.offset/SSR_ADC)-1 | (dmrs_params.scs/SSR_ADC-1)<<5 | dmrs_params.symbol_index<<10 | (ptrs_params.scs/SSR_ADC-1-ptrs_params.offset/SSR_ADC)<<15 |
-            (ptrs_params.scs/SSR_ADC-1)<<20 | ptrs_params.even<<25 | ofdm_params.num_OFDM_syms<<26 | bw<<31;
+                     (ptrs_params.scs/SSR_ADC-1)<<20 | ptrs_params.even<<25 | ofdm_params.num_OFDM_syms<<26 | bw<<31;
     cmdManager->writeReg(RX_PTRS_BLOCK_ADDR,value);
 
     value = (ofdm_params.num_sc/SSR_ADC) | ptrs_params.SSB_symbols[0]<<12 | ptrs_params.SSB_symbols[1]<<17 |
@@ -201,9 +206,9 @@ void radio_control::set_rx_ldcp_param(ldpc_info params) {
     cmdManager->writeReg(RX_LDCP_DECODER_ADDR,value);
 
     value= params.regs.Em1[1] >> 10 |
-                    params.regs.Em1[2]<<1 |
-                    params.regs.Em1[3]<<12 |
-                    params.regs.Em1[4]<<23;
+           params.regs.Em1[2]<<1 |
+           params.regs.Em1[3]<<12 |
+           params.regs.Em1[4]<<23;
     cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x4,value);
 
     value= params.regs.Em1[4] >> 9 |
@@ -227,7 +232,7 @@ void radio_control::set_rx_ldcp_param(ldpc_info params) {
     cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x14,value);
 
     value= params.regs.lastPunctured |
-            params.regs.Fm1 << 4 |
+           params.regs.Fm1 << 4 |
            params.regs.lastFillers << 15 |
            params.regs.nZeros[0] << 19 |
            params.regs.nZeros[1] << 30 ;
@@ -270,6 +275,18 @@ void radio_control::set_rx_split_config(uint8_t split){
     cmdManager->sendCmd(cmd_str,false);
 }
 
+void radio_control::set_dynamic_buffer_params(uint num_bytes){
+    //uint32_t prog_full=((RX_FIFO_BYTES/2)-(RX_FIFO_BYTES%(num_bytes)))/8;
+    cmdManager->writeReg(RX_DYNAMIC_BUFFER_ADDR,64*1024-num_bytes/8);
+}
+
+void radio_control::enable_rx_radio(bool enable) {
+    cmd_struct cmd_str;
+    cmd_str.cmd="enableRX ";
+    cmd_str.cmdArgs.push_back(std::to_string(enable));
+    cmdManager->sendCmd(cmd_str,false);
+}
+
 uint32_t radio_control::get_num_of_rx_bytes(uint8_t split) {
     uint32_t num_of_rx_bytes;
     switch(split){
@@ -308,9 +325,9 @@ uint32_t radio_control::get_num_of_rx_bytes(uint8_t split) {
 }
 
 void radio_control::update_config_parameters(bool bw, int num_resource_elements, int mod_order, float rate, float tx_ifs){
-    
+
     radio_config.bw=bw;
-    
+
     radio_config.ofdm.OFDM_Bypass=false;
     radio_config.ofdm.CP1=400;
     radio_config.ofdm.CP2=144;
@@ -325,7 +342,7 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
         radio_config.offsetSSB = 0;
     else
         radio_config.offsetSSB = 6;
-    
+
 
     //configure ssb block
     radio_config.num_ssb= SSB_BLOCK_RE*SSB_BLOCK_NUM_SYMBOLS*SUBCARRIERS_PER_RE+(radio_config.offsetSSB*2)*SSB_BLOCK_NUM_SYMBOLS;
@@ -354,8 +371,6 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
 
     radio_config.phase_tracking.SSB_index[0]=(radio_config.ofdm.num_sc/2)-(SSB_BLOCK_RE*SUBCARRIERS_PER_RE/2)-radio_config.offsetSSB;
     radio_config.phase_tracking.SSB_index[1]=(radio_config.ofdm.num_sc/2)+(SSB_BLOCK_RE*SUBCARRIERS_PER_RE/2)+radio_config.offsetSSB;
-/*    radio_config.phase_tracking.SSB_index[0]=751-1-radio_config.offsetSSB;
-    radio_config.phase_tracking.SSB_index[1]=990+radio_config.offsetSSB;*/
 
     radio_config.phase_tracking.SSB_symbols[0]=9;
     radio_config.phase_tracking.SSB_symbols[1]=10;
@@ -379,12 +394,15 @@ void radio_control::configure_rx_blocks(uint8_t rx_split){
     radio_config.rx_split=rx_split;
     set_rx_split_config(radio_config.rx_split);
 
+    //automatic gain control
+    set_rx_agc_param(true, 800);
+
     //cfo correction
-    set_rx_cfo_correction_param(radio_config.bw,true,SCALE_FACTOR_DIV_2);
-    
+    set_rx_cfo_correction_param(radio_config.bw,false,SCALE_FACTOR_DIV_1);
+
     //rx ofdm
     set_rx_ofdm_param(radio_config.ofdm);
-    
+
     //filter configuration
     set_rx_filter_param(radio_config.bw);
 
@@ -396,7 +414,7 @@ void radio_control::configure_rx_blocks(uint8_t rx_split){
 
     //configure equalization block
     set_rx_eq_param(radio_config.ofdm);
-    
+
     //configure phase tracking
     set_rx_phase_tracking_param(radio_config.bw,radio_config.phase_tracking,radio_config.equalization,radio_config.ofdm);
     //configure demapper
@@ -404,6 +422,7 @@ void radio_control::configure_rx_blocks(uint8_t rx_split){
 
     //configure ldpc decoder
     auto ldpc_config = get_LDPC_config(radio_config.tbs, radio_config.code_rate,radio_config.num_sch*radio_config.mod_order,radio_config.mod_order);
+    radio_config.ldpc_segmented_length= ldpc_config.K*ldpc_config.C;
     set_rx_ldcp_param(ldpc_config);
 }
 
@@ -435,9 +454,11 @@ void radio_control::load_SSB(std::vector<int16_t> tx_data){
 }
 
 void radio_control::configure_radio(uint8_t rx_split, uint8_t tx_split, uint8_t bw, int num_resource_elements, uint8_t mod_order, float rate, float tx_ifs){
+    enable_rx_radio(false);
     update_config_parameters(bw, num_resource_elements, mod_order, rate, tx_ifs);
     configure_rx_blocks(rx_split);
     configure_tx_blocks(tx_split);
+    set_dynamic_buffer_params(get_num_of_rx_bytes(rx_split)); // the reg uses the same reset than the fifo
 }
 
 bool radio_control::init_platform() {

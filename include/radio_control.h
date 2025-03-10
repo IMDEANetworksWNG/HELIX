@@ -87,6 +87,8 @@ namespace mimorph {
         uint32_t            ldpc_segmented_length;
         float               ifs; //inter-frame spacing at tx
         float               code_rate; //inter-frame spacing at tx
+        bool                agc_enabled;
+        int                 agc_vref;
     };
 
     class radio_control {
@@ -99,6 +101,7 @@ namespace mimorph {
         void configure_radio(uint8_t rx_split, uint8_t tx_split, uint8_t bw, int num_resource_elements, uint8_t mod_order, float rate, float tx_ifs);
         void load_SSB(std::vector<int16_t> tx_data);
         uint32_t  get_num_of_rx_bytes(uint8_t split);
+        void enable_rx_radio(bool enable);
 
         radio_config_str* get_radio_config(){
             return &radio_config;
@@ -130,6 +133,8 @@ namespace mimorph {
             void set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, dmrs_str dmrs_params, ofdm_str ofdm_params);
             void set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order);
             void set_rx_ldcp_param(ldpc_info params);
+            void set_dynamic_buffer_params(uint num_bytes);
+            void set_rx_agc_param(bool enable, int vref);
 
             void set_tx_ofdm_param(ofdm_str params);
             void set_tx_filter_param(bool bw, float ifs);
