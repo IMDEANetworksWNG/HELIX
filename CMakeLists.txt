@@ -68,3 +68,9 @@ add_executable(loopback examples/loopback_test.cpp
 target_link_libraries(loopback
         MIMORPH_RT)
 
+add_executable(hw_accel_exp examples/hw_accel.cpp        examples/helpers.cpp
+        examples/helpers.h
+)
+
+target_link_libraries(hw_accel_exp
+        MIMORPH_RT)

@@ -137,6 +137,9 @@ std::string get_waveform_filename(uint8_t mod_order, uint8_t n_re, float rate, u
         case SSB_FILE:
             filename = filename + "/slotFR2_CH1_SSB_TX1.txt";
             break;
+        case FFT_ACCEL:
+            filename = filename + "/slotFR2_CH1_FFT_ACCEL_TX1.txt";
+            break;
     }
     return  filename;
 }
