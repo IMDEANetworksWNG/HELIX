@@ -19,18 +19,33 @@ std::vector<mimorph::converter_conf> create_conv_conf(){
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
 
-void accel_data (mimorph::slot_str& rx_data,int num_of_rx_bytes, std::vector<int16_t>& tx_data, mimorph::mimorph& radio){
-    pid_t pid = fork();
-    if (pid < 0) {
-        std::cerr << "Fork failed\n";
-        return;
-    } else if (pid == 0) {
-        radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);;  // Child process runs the receiver
-    } else {
-        radio.stream->transmit(tx_data.data(), tx_data.size() * 2);; // Parent process runs the transmitter
-    }
+// Shared data and mutex
+mimorph::slot_str shared_rx_data(0, 0); // Properly initialize sizes
+std::mutex rx_data_mutex;
+
+void receiver_thread(mimorph::slot_str& rx_data, int num_of_rx_bytes, mimorph::mimorph& radio) {
+    radio.stream->receive(&rx_data, num_of_rx_bytes, false, false, false);
+
+    // Protect access to shared_rx_data with a mutex
+    std::lock_guard<std::mutex> lock(rx_data_mutex);
+    shared_rx_data = std::move(rx_data); // Move data to shared data structure
+    //std::cout << "Receiver Thread: Received data (size): " << shared_rx_data.data.size() << "\n"; // Output size to check data is sent to the share data
 }
 
+void accel_data(mimorph::slot_str& rx_data, int num_of_rx_bytes, std::vector<int16_t>& tx_data, mimorph::mimorph& radio) {
+
+    mimorph::slot_str temp_data (num_of_rx_bytes,0);
+    // Launch the receiver thread.
+    std::thread receiver(receiver_thread, std::ref(temp_data), num_of_rx_bytes, std::ref(radio));
+
+    // Transmitter (runs in the main thread)
+    radio.stream->transmit(tx_data.data(), tx_data.size() * 2);
+
+    receiver.join();
+    // Access the received data (protected by the mutex)
+    std::lock_guard<std::mutex> lock(rx_data_mutex);
+    rx_data = std::move(shared_rx_data); // Move data to local variable
+}
 
 
 int main() {
@@ -69,44 +84,55 @@ int main() {
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);
 
-    int n_packets = 1000;
+    int n_packets = 10000;
     std::vector<double> latency;
     int recv_pkts=0;
 
+    pid_t main_pid = getpid();
+    latency.reserve(n_packets);
 
+    accel_data(rx_data, num_of_rx_bytes,tx_data,radio);
+    rx_data.data.clear();
+    rx_data.data.resize(num_of_rx_bytes);
 
     auto start_tp = std::chrono::high_resolution_clock::now();
-    for(int i=0;i<n_packets;i++){
+
+    for (int i = 0; i < n_packets; i++) {
         auto start = std::chrono::high_resolution_clock::now();
-        accel_data(rx_data, num_of_rx_bytes,tx_data,radio);
-        if(!rx_data.data.empty()) {
+
+        accel_data(rx_data, num_of_rx_bytes, tx_data, radio);
+
+        if (!rx_data.data.empty()) {
             auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            latency.push_back(duration.count());
+            latency.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
             recv_pkts++;
+            /*std::string rx_packet_fn = experiments_folder + subfolder +  "/DATA/Packet_" + std::to_string(i) + ".bin";
+            writeBinaryFile(rx_packet_fn,rx_data.data);*/
         }
         rx_data.data.clear();
         rx_data.data.resize(num_of_rx_bytes);
     }
 
-    auto end_tp = std::chrono::high_resolution_clock::now();
-    radio.control->enable_rx_radio(false);
+    if (getpid() == main_pid) {
+        auto end_tp = std::chrono::high_resolution_clock::now();
+        radio.control->enable_rx_radio(false);
 
-    // Finding sum
-    /*MEASURE LATENCY*/
-    double sum = accumulate(latency.begin(), latency.end(), 0);
-    // Finding average of all elements
-    std::cout << "Latency mean: "  << sum / latency.size() << " us. Packets recv: " << recv_pkts  << std::endl;
-    std::string latency_fn = experiments_folder + subfolder + "DATA/Latency.bin";
-    writeBinaryFileDouble(latency_fn,latency);
+        // Finding sum
+        /*MEASURE LATENCY*/
+        double sum = accumulate(latency.begin(), latency.end(), 0);
+        // Finding average of all elements
+        std::cout << "Latency mean: "  << sum / latency.size() << " us. Packets recv: " << recv_pkts  << std::endl;
+        std::string latency_fn = experiments_folder + subfolder + "DATA/Latency.bin";
+        writeBinaryFileDouble(latency_fn,latency);
 
-    /*MEASURE THROUGHPUT*/
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_tp - start_tp);
-    std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
+        /*MEASURE THROUGHPUT*/
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_tp - start_tp);
+        std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
 
-    auto tp = static_cast<double>(1.0*(recv_pkts)*num_of_rx_bytes/ duration.count());
-    std::cout << "Recv packets: " << recv_pkts << "/" << n_packets << std::endl;
-    std::cout << "Measured throughput is : " << tp << "Mbps" << std::endl;
+        auto tp = static_cast<double>(1.0*(recv_pkts)*num_of_rx_bytes/ duration.count());
+        std::cout << "Recv packets: " << recv_pkts << "/" << n_packets << std::endl;
+        std::cout << "Measured throughput is : " << tp << "Mbps" << std::endl;
+    }
 
     return 1;
 }

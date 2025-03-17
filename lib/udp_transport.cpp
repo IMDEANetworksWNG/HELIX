@@ -82,23 +82,21 @@ void udp_socket::send(void* data, ssize_t num_bytes) {
 
 }
 
+
 ssize_t udp_socket::recv(void* data, ssize_t num_bytes) {
     ssize_t totalReceived = 0;
-    ssize_t received_bytes=0;
-
-    auto* ptr=(uint8_t*)data;
+    ssize_t received_bytes;
+    uint8_t* ptr = static_cast<uint8_t*>(data);
     socklen_t server_addr_len = sizeof(serverAddr);
 
-    while (totalReceived < num_bytes){
-        ptr+=received_bytes;
-
-        received_bytes = recvfrom(socket_, (void *)ptr, num_bytes, 0,
-                                          (sockaddr*)(&serverAddr), &server_addr_len);
+    while (totalReceived < num_bytes) {
+        received_bytes = recvfrom(socket_, ptr + totalReceived, num_bytes - totalReceived, 0,
+                                  (sockaddr*)(&serverAddr), &server_addr_len);
         if (received_bytes == -1) {
             DEBUG_PRINT("UDP_DEBUG: Error receiving data");
-            return totalReceived;
+            return -1;  // Return -1 to indicate an error, rather than a partial read
         }
-        totalReceived+= received_bytes;
+        totalReceived += received_bytes;
     }
     return totalReceived;
 }
