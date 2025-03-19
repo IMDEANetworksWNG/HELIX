@@ -1,7 +1,3 @@
-//
-// Created by imdea on 22/11/2024.
-//
-
 #include "helpers.h"
 #include <iostream>
 #include <fstream>
@@ -10,7 +6,6 @@
 #include <string>
 #include <cstring>
 #include <cmath>
-#include <algorithm>
 #include "../include/defines.h"
 
 
@@ -125,7 +120,7 @@ std::string get_waveform_filename(uint8_t mod_order, uint8_t n_re, float rate, u
         case SPLIT_7_3:
             filename = filename + "/slotFR2_CH1_7.3_TX1.txt";
             break;
-        case SPLIT_7_2: //careful with the sample generation. It has a bug related to the zero padding
+        case SPLIT_7_2:
             filename = filename + "/slotFR2_CH1_7.2_TX1.txt";
             break;
         case SPLIT_7_2x:
@@ -167,22 +162,13 @@ std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
     return values;
 }
 
-void remove_ldpc_padding(std::vector<uint8_t>* rx_data){
-    //Removing the padding from the LDPC decoder
-    uint8_t * ptr = rx_data->data();
-    rx_data->clear();
-    rx_data->insert(rx_data->begin(),ptr,ptr+897);
-    rx_data->insert(rx_data->end(),ptr+968,ptr+968+897);
-    rx_data->insert(rx_data->end(),ptr+968*2,ptr+(968*2)+897);
-}
-
 void set_scheduler_options(){
-    cpu_set_t mask;
+    /*cpu_set_t mask;
     CPU_ZERO(&mask);
-    CPU_SET(0, &mask);  // Bind process to core 50
+    CPU_SET(0, &mask);  // Bind process to core 0 -- No major impact
     if (sched_setaffinity(0, sizeof(mask), &mask)) {
         std::cerr << "Failed to set process affinity: " << strerror(errno) << std::endl;
-    }
+    }*/
     sched_param param{};
     param.sched_priority = sched_get_priority_max(SCHED_FIFO);
 

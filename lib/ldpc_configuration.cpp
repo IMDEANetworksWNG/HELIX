@@ -1,7 +1,3 @@
-//
-// Created by imdea on 23/09/2024.
-//
-
 #include "../include/ldpc_configuration.h"
 #include <cmath>
 #include <algorithm>

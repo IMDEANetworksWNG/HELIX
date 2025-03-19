@@ -1,11 +1,7 @@
-//
-// Created by imdea on 29/05/2024.
-//
-
 #include "../include/cmd_manager.h"
 #include <cstring>
 
-using namespace mimorph;
+using namespace helix;
 
 std::string u32_to_hex_string(uint32_t value) {
     static const char hex_digits[] = "0123456789ABCDEF";

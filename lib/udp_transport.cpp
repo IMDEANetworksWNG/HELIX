@@ -1,16 +1,10 @@
-//
-// Created by imdea on 29/05/2024.
-//
-
 #include "../include/udp_transport.h"
 #include <iostream>
 #include <string>
 #include <arpa/inet.h> // For sockaddr_in
 #include <sys/socket.h>
-#include <netinet/ip.h>
 
-using namespace mimorph;
-
+using namespace helix;
 
 
 udp_socket::udp_socket(const char* _ip, int client_port):
@@ -27,16 +21,16 @@ udp_socket::udp_socket(const char* _ip, int client_port):
 
     clientAddr.sin_family = AF_INET;
     clientAddr.sin_addr.s_addr = INADDR_ANY;
-    clientAddr.sin_port = htons(client_port); // Set your desired source port
+    clientAddr.sin_port = htons(client_port);
 
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = inet_addr(ip);
     serverAddr.sin_port = htons(client_port);
 
-    //Timeout for the socket (100ms)
+    //Timeout for the socket
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = 200000; //10
+    tv.tv_usec = 200000;
     if (setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
         DEBUG_PRINT("UDP_DEBUG: " );
     }
@@ -45,15 +39,14 @@ udp_socket::udp_socket(const char* _ip, int client_port):
         DEBUG_PRINT("UDP_DEBUG: " );
     }
 
-    val = 6;
+    val = 6; //High priority
     if (setsockopt(socket_, SOL_SOCKET, SO_PRIORITY, &val, sizeof(val)) < 0) {
         DEBUG_PRINT("UDP_DEBUG: " );
     }
-    val = 1;
+    val = 1; //Polling mode
     if (setsockopt(socket_, SOL_SOCKET, SO_BUSY_POLL, &val, sizeof(val)) < 0) {
         DEBUG_PRINT("UDP_DEBUG: " );
     }
-
 
     if (bind(socket_, (sockaddr*)&clientAddr, sizeof(clientAddr)) == -1) {
         std::cerr << "UDP:Error binding socket." << std::endl;
@@ -86,7 +79,7 @@ void udp_socket::send(void* data, ssize_t num_bytes) {
 ssize_t udp_socket::recv(void* data, ssize_t num_bytes) {
     ssize_t totalReceived = 0;
     ssize_t received_bytes;
-    uint8_t* ptr = static_cast<uint8_t*>(data);
+    auto ptr = static_cast<uint8_t*>(data);
     socklen_t server_addr_len = sizeof(serverAddr);
 
     while (totalReceived < num_bytes) {

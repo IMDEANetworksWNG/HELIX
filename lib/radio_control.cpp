@@ -1,13 +1,9 @@
-//
-// Created by imdea on 29/05/2024.
-//
-
 #include "../include/radio_control.h"
 #include "../include/defines.h"
 #include <cmath>
 #include <iostream>
 
-namespace mimorph {
+namespace helix {
 
 static int getTBSFromTable(int NdInfo) {
     // Capture TS 38.214 Table 5.1.3.2-1
@@ -476,4 +472,4 @@ bool radio_control::init_platform() {
 }
 
 
-} // mimorph
+} // helix

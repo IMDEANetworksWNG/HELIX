@@ -1,4 +1,4 @@
-#include "../include/mimorph.h"
+#include "../include/helix.h"
 #include "../include/defines.h"
 #include "helpers.h"
 #include <iostream>
@@ -14,16 +14,16 @@ const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 const std::string  subfolder = "/CAPTURED_DATA/HW_ACCEL/FFT_ACCEL/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
-std::vector<mimorph::converter_conf> create_conv_conf(){
+std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
 
 // Shared data and mutex
-mimorph::slot_str shared_rx_data(0, 0); // Properly initialize sizes
+helix::slot_str shared_rx_data(0, 0); // Properly initialize sizes
 std::mutex rx_data_mutex;
 
-void receiver_thread(mimorph::slot_str& rx_data, int num_of_rx_bytes, mimorph::mimorph& radio) {
+void receiver_thread(helix::slot_str& rx_data, int num_of_rx_bytes, helix::helix& radio) {
     radio.stream->receive(&rx_data, num_of_rx_bytes, false, false, false);
 
     // Protect access to shared_rx_data with a mutex
@@ -32,9 +32,9 @@ void receiver_thread(mimorph::slot_str& rx_data, int num_of_rx_bytes, mimorph::m
     //std::cout << "Receiver Thread: Received data (size): " << shared_rx_data.data.size() << "\n"; // Output size to check data is sent to the share data
 }
 
-void accel_data(mimorph::slot_str& rx_data, int num_of_rx_bytes, std::vector<int16_t>& tx_data, mimorph::mimorph& radio) {
+void accel_data(helix::slot_str& rx_data, int num_of_rx_bytes, std::vector<int16_t>& tx_data, helix::helix& radio) {
 
-    mimorph::slot_str temp_data (num_of_rx_bytes,0);
+    helix::slot_str temp_data (num_of_rx_bytes,0);
     // Launch the receiver thread.
     std::thread receiver(receiver_thread, std::ref(temp_data), num_of_rx_bytes, std::ref(radio));
 
@@ -53,9 +53,9 @@ int main() {
     set_scheduler_options();
 
     //initialize platform with IP
-    auto radio = mimorph::mimorph(fpga_ip);
+    auto radio = helix::helix(fpga_ip);
 
-    mimorph::stream_str stream_config{};
+    helix::stream_str stream_config{};
 
     uint8_t rx_split = FFT_ACCEL;
     uint8_t tx_split = HW_ACCEL_TX;
@@ -79,7 +79,7 @@ int main() {
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
 
     uint32_t num_of_rx_bytes = radio.control->get_num_of_rx_bytes(SPLIT_7_2x);
-    mimorph::slot_str rx_data(num_of_rx_bytes, radio_parameters->ofdm.num_sc * 4);
+    helix::slot_str rx_data(num_of_rx_bytes, radio_parameters->ofdm.num_sc * 4);
 
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);

@@ -2,54 +2,13 @@
 <project version="4">
   <component name="PublishConfigData" serverName="Avocado (087bda0f-9cb5-4a7b-adbc-9364b4904245)" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="Avocado (087bda0f-9cb5-4a7b-adbc-9364b4904245)">
+      <paths name="tomato (9e8b3cf8-8841-4570-bcb8-1f752f611d38)">
         <serverdata>
           <mappings>
-            <mapping deploy="/tmp/tmp.jb4Zix3qz1" local="$PROJECT_DIR$" />
+            <mapping deploy="/tmp/tmp.dGGnok9vHg/MIMORPH_RT" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
-          </excludedPaths>
-        </serverdata>
-      </paths>
-      <paths name="Lime">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="Lime (6e32043e-7107-49fd-9f7e-291644a6cda9)">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="Mantis (c18bf39d-4aa8-4d76-86a2-bec9112f17fa)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/tmp/tmp.4k7x0ka1g0" local="$PROJECT_DIR$" />
-          </mappings>
-          <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
-          </excludedPaths>
-        </serverdata>
-      </paths>
-      <paths name="Mantis (ea5765cc-ba70-4374-aef8-98bf455bdeec)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/tmp/MIMORPH_RT" local="$PROJECT_DIR$" />
-          </mappings>
-          <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-avocado" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-mantis" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-tomato" />
           </excludedPaths>
         </serverdata>
       </paths>

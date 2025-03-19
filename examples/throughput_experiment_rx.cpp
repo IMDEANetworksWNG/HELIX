@@ -1,4 +1,4 @@
-#include "../include/mimorph.h"
+#include "../include/helix.h"
 #include "../include/defines.h"
 #include "helpers.h"
 #include <iostream>
@@ -11,7 +11,7 @@
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/";
 
-std::vector<mimorph::converter_conf> create_conv_conf(){
+std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
@@ -21,12 +21,12 @@ int main() {
     set_scheduler_options();
 
     //initialize platform with IP
-    auto radio=mimorph::mimorph(fpga_ip);
+    auto radio=helix::helix(fpga_ip);
 
     uint8_t rx_split=SPLIT_6;
 
     //set udp ifg and mss
-    mimorph::stream_str stream_config{};
+    helix::stream_str stream_config{};
     stream_config.udp_rx_mss=1024*8;
     stream_config.udp_rx_ifg=stream_config.udp_rx_mss/10;
     radio.control->set_streaming_param(stream_config);
@@ -36,13 +36,13 @@ int main() {
                                    145, MOD_QPSK, 490.0/1024, 0);
 
     //Set the frequency bands of the different converters
-    std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
+    std::vector<helix::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
     uint32_t num_rx_bytes_slot=radio.control->get_num_of_rx_bytes(rx_split);
 
     auto* radio_config=radio.control->get_radio_config();
-    mimorph::slot_str rx_data(num_rx_bytes_slot,radio_config->ofdm.num_sc*4);
+    helix::slot_str rx_data(num_rx_bytes_slot,radio_config->ofdm.num_sc*4);
 
     int n_packets=10;
     int n_recv_pkts=0;

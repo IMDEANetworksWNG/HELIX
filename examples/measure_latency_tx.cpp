@@ -1,4 +1,4 @@
-#include "../include/mimorph.h"
+#include "../include/helix.h"
 #include "../include/defines.h"
 #include "helpers.h"
 #include <iostream>
@@ -13,7 +13,7 @@ const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/GEN_DATA/MED_RATE";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7", "SPLIT7_1", "SPLIT7_2", "SPLIT8"};
 
-std::vector<mimorph::converter_conf> create_conv_conf(){
+std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
@@ -24,7 +24,7 @@ int main() {
     set_scheduler_options();
 
     //initialize platform with IP
-    auto radio=mimorph::mimorph(fpga_ip);
+    auto radio=helix::helix(fpga_ip);
 
     uint8_t rx_split=SPLIT_6;
     uint8_t tx_split=SPLIT_7_3;
@@ -33,7 +33,7 @@ int main() {
     uint8_t mod_order = MOD_QPSK;
 
     //set udp ifg and mss
-    mimorph::stream_str stream_config{};
+    helix::stream_str stream_config{};
     stream_config.udp_rx_mss=1024*8;
     stream_config.udp_rx_ifg=stream_config.udp_rx_mss/10;
     stream_config.radio_tx_mss=pow(2,32)*8-1;
@@ -51,7 +51,7 @@ int main() {
     radio.control->load_SSB(ssb);
 
     //Set the frequency bands of the different converters
-    std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
+    std::vector<helix::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
@@ -60,7 +60,7 @@ int main() {
     usleep(1000);
 
     uint32_t num_of_rx_bytes=radio.control->get_num_of_rx_bytes(rx_split);
-    mimorph::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
+    helix::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
 
     std::cout << "Starting experiment as Transmitter: " << std::endl;
 

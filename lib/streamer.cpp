@@ -1,14 +1,10 @@
-//
-// Created by imdea on 29/05/2024.
-//
-
 #include "../include/streamer.h"
 #include "../include/defines.h"
 #include "cmath"
 #include <cstring>
 #include <unistd.h>
 
-namespace mimorph {
+namespace helix {
     void streamer::unpack_metadata(slot_str* slot,bool ce_enable, bool energy_enable, bool cfo_enable){
         ssize_t num_bytes=0;
         auto ce_size=(ssize_t)slot->channel_estimation.size();
@@ -97,8 +93,6 @@ namespace mimorph {
             return;
         }
     }
-
-    //Only working for split 6 or below 8000 bytes packet
     void streamer::transmit(const std::vector<std::vector<int16_t>>& data, ssize_t num_bytes_per_slot){
         ssize_t total_bytes=data.size()*num_bytes_per_slot;
         if(triggerTX(total_bytes)){
@@ -113,8 +107,11 @@ namespace mimorph {
     void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable) {
         if(triggerRX(num_bytes, ce_enable, energy_enable, cfo_enable,1)){
             ssize_t recv_bytes=udp->data_socket.recv(slot->data.data(),num_bytes);
-            if(recv_bytes<num_bytes)
-                    STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+            if(recv_bytes<num_bytes) {
+                STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+                slot->data.clear();
+                return;
+            }
             slot->data.resize(recv_bytes);
             if((ce_enable | energy_enable | cfo_enable) & !slot->data.empty()){
                 unpack_metadata(slot,ce_enable,energy_enable,cfo_enable);
@@ -140,4 +137,4 @@ namespace mimorph {
         }
     }
 
-} // mimorph
+} // helix

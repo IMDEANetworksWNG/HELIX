@@ -1,4 +1,4 @@
-#include "../include/mimorph.h"
+#include "../include/helix.h"
 #include "../include/defines.h"
 #include "helpers.h"
 #include <vector>
@@ -11,7 +11,7 @@ const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const int num_of_tx_bytes=1024*128;
 
 
-std::vector<mimorph::converter_conf> create_conv_conf(){
+std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
@@ -21,10 +21,10 @@ int main() {
     set_scheduler_options();
 
     //initialize platform with IP
-    auto radio=mimorph::mimorph(fpga_ip);
+    auto radio=helix::helix(fpga_ip);
 
     //configure streaming parameters //TO DO: separar TX y RX en udp y radio
-    mimorph::stream_str stream_config{};
+    helix::stream_str stream_config{};
 
     //set udp ifg and ms
     stream_config.udp_rx_mss=1024*8;
@@ -38,7 +38,7 @@ int main() {
     radio.control->set_tx_split_config(SPLIT_8);
 
     //Set the frequency bands of the different converters
-    std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
+    std::vector<helix::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send

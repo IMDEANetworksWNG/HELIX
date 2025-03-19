@@ -1,4 +1,4 @@
-#include "../include/mimorph.h"
+#include "../include/helix.h"
 #include "../include/defines.h"
 #include "helpers.h"
 #include <iostream>
@@ -13,7 +13,7 @@ const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 const std::string  subfolder = "/CAPTURED_DATA/BER/MED_RATE/test/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
-std::vector<mimorph::converter_conf> create_conv_conf(){
+std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
@@ -25,9 +25,9 @@ int main() {
     set_scheduler_options();
 
     //initialize platform with IP
-    auto radio=mimorph::mimorph(fpga_ip);
+    auto radio=helix::helix(fpga_ip);
 
-    mimorph::stream_str stream_config{};
+    helix::stream_str stream_config{};
 
     uint8_t rx_split=SPLIT_7_2x;
 
@@ -43,12 +43,12 @@ int main() {
     auto radio_parameters=radio.control->get_radio_config();
 
     //Set the frequency bands of the different converters
-    std::vector<mimorph::converter_conf> conv_conf=create_conv_conf();
+    std::vector<helix::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
     uint32_t num_of_rx_bytes=radio.control->get_num_of_rx_bytes(rx_split);
 
-    mimorph::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
+    helix::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
 
     int n_packets=10;
     double signal_pow[n_packets];
