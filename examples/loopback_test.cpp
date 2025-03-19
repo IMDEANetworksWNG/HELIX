@@ -24,8 +24,8 @@ int main() {
     set_scheduler_options();
     auto radio=helix::helix(fpga_ip);
 
-    uint8_t rx_split=SPLIT_8;
-    uint8_t tx_split=SPLIT_7_2x;
+    uint8_t rx_split=SPLIT_6;
+    uint8_t tx_split=SPLIT_7_3;
     uint8_t n_re = 145;
     float rate = 490.0/1024;
     uint8_t mod_order = MOD_QPSK;
@@ -62,12 +62,11 @@ int main() {
     int n_packets=5;
     std::cout << "Starting experiment: " << std::endl;
     usleep(10000);
+    radio.stream->transmit(tx_data.data(),tx_data.size()*2);
+    radio.control->enable_rx_radio(true);
 
-    //radio.control->enable_rx_radio(true);
-
-    /*for(int i=0;i<n_packets;i++){
+    for(int i=0;i<n_packets;i++){
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        usleep(100000);
         radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);
          if(!rx_data.data.empty()){
              std::string rx_packet_fn = experiments_folder + subfolder + split_string[rx_split-1] + "/Packet_" + std::to_string(i) + ".bin";
@@ -75,11 +74,7 @@ int main() {
              rx_data.data.clear();
              rx_data.data.resize(num_of_rx_bytes);
          }
-    }*/
-
-    while (1) {
-        radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        usleep(50000);
+        usleep(100);
     }
 
     radio.control->enable_rx_radio(false);

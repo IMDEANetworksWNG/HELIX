@@ -163,12 +163,12 @@ std::vector<int16_t> load_waveform_from_file(const std::string& filename) {
 }
 
 void set_scheduler_options(){
-    /*cpu_set_t mask;
+    cpu_set_t mask;
     CPU_ZERO(&mask);
     CPU_SET(0, &mask);  // Bind process to core 0 -- No major impact
     if (sched_setaffinity(0, sizeof(mask), &mask)) {
         std::cerr << "Failed to set process affinity: " << strerror(errno) << std::endl;
-    }*/
+    }
     sched_param param{};
     param.sched_priority = sched_get_priority_max(SCHED_FIFO);
 

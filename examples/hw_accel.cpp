@@ -10,7 +10,6 @@
 #include <bits/stdc++.h>
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
-//const std::string  experiments_folder = "/home/rafael/MOBISYS25/MATLAB/";
 const std::string  subfolder = "/CAPTURED_DATA/HW_ACCEL/FFT_ACCEL/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
@@ -84,7 +83,7 @@ int main() {
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);
 
-    int n_packets = 10000;
+    int n_packets = 1000;
     std::vector<double> latency;
     int recv_pkts=0;
 

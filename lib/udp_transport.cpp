@@ -39,15 +39,6 @@ udp_socket::udp_socket(const char* _ip, int client_port):
         DEBUG_PRINT("UDP_DEBUG: " );
     }
 
-    val = 6; //High priority
-    if (setsockopt(socket_, SOL_SOCKET, SO_PRIORITY, &val, sizeof(val)) < 0) {
-        DEBUG_PRINT("UDP_DEBUG: " );
-    }
-    val = 1; //Polling mode
-    if (setsockopt(socket_, SOL_SOCKET, SO_BUSY_POLL, &val, sizeof(val)) < 0) {
-        DEBUG_PRINT("UDP_DEBUG: " );
-    }
-
     if (bind(socket_, (sockaddr*)&clientAddr, sizeof(clientAddr)) == -1) {
         std::cerr << "UDP:Error binding socket." << std::endl;
         exit(EXIT_FAILURE);
