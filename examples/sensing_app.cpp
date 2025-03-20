@@ -6,10 +6,9 @@
 #include <string>
 #include <unistd.h>
 
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
-//const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/MATLAB/";
-const std::string  subfolder = "/CAPTURED_DATA/SENSING/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
+const std::string  subfolder = "/RX_data/";
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -59,6 +58,7 @@ int main() {
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
     rx_data.channel_estimation.clear();
+    radio.control->enable_rx_radio(true);
     while(1){
         radio.stream->receive(&rx_data,num_rx_bytes_slot,enable_ce,false,false);
         if(!rx_data.data.empty()) {
@@ -82,7 +82,7 @@ int main() {
         rx_data.data.clear();
         rx_data.data.resize(num_rx_bytes_slot);
     }
-
+    radio.control->enable_rx_radio(false);
     // Flattened vector
     std::vector<uint8_t> flattened;
 

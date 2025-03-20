@@ -8,8 +8,9 @@
 #include <chrono>
 #include <cmath>
 
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/GEN_DATA/";
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
+const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7", "SPLIT7_1", "SPLIT7_2", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -43,7 +44,7 @@ int main() {
     auto radio_parameters=radio.control->get_radio_config();
 
     //load SSB in the block RAM
-    std::string ssb_filename = experiments_folder +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
+    std::string ssb_filename = experiments_folder + "/GEN_DATA/" +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
     std::vector<int16_t> ssb = load_waveform_from_file(ssb_filename);
     radio.control->load_SSB(ssb);
 
@@ -52,14 +53,15 @@ int main() {
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
-    std::string filename = experiments_folder + get_waveform_filename(mod_order, n_re, rate, tx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     usleep(1000);
 
     uint32_t num_of_rx_bytes=radio.control->get_num_of_rx_bytes(rx_split);
     helix::slot_str rx_data(num_of_rx_bytes,radio_parameters->ofdm.num_sc*4);
 
-    //std::cout << "Starting experiment as Receiver: " << std::endl;
+    std::cout << "Starting experiment as Node B: " << std::endl;
+    radio.control->enable_rx_radio(true);
     int n_recv_pkts=0;
     while(n_recv_pkts<10000){
         radio.stream->receive(&rx_data,num_of_rx_bytes,false,false,false);
@@ -70,4 +72,7 @@ int main() {
         rx_data.data.clear();
         rx_data.data.resize(num_of_rx_bytes);
     }
+    radio.control->enable_rx_radio(false);
+
+    std::cout << "The experiment has finished " << std::endl;
 }

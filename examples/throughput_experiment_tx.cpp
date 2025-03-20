@@ -9,8 +9,8 @@
 #include <chrono>
 
 
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/GEN_DATA/";
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -43,16 +43,16 @@ int main() {
                                    n_re, mod_order, rate, 0);
 
     //load SSB in the block RAM
-    std::string ssb_filename = experiments_folder +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
+    std::string ssb_filename = experiments_folder + "/GEN_DATA/" +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
     std::vector<int16_t> ssb = load_waveform_from_file(ssb_filename);
     radio.control->load_SSB(ssb);
 
     //Set the frequency bands of the different converters
-    std::vector<helix::converter_conf> conv_conf = create_conv_conf();
+    std::vector<helix::converter_conf> conv_conf=create_conv_conf();
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
-    std::string filename = experiments_folder + get_waveform_filename(mod_order, n_re, rate, tx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     usleep(1000);
 
@@ -62,12 +62,4 @@ int main() {
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
         usleep(50000); //10000 - 500
     }
-
-/*    for (int i = 0; i < 5002; i++) {
-        radio.stream->transmit(tx_data.data(), tx_data.size() * 2);
-        usleep(20000);//10000 - 500
-    }*/
-    std::cout << "Experiment is finished " << std::endl;
-
-    return 1;
 }

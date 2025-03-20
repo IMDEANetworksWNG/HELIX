@@ -6,19 +6,16 @@
 #include <string>
 #include <chrono>
 #include <unistd.h>
-#include <cmath>
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
-//const std::string  experiments_folder = "/home/rafael/MOBISYS25/MATLAB/";
-const std::string  subfolder = "/CAPTURED_DATA/BER/MED_RATE/test/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
+
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
+const std::string  subfolder = "/RX_data";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
-
-
 
 int main() {
     //set task priority
@@ -64,9 +61,7 @@ int main() {
     while(1){
         radio.stream->receive(&rx_data,num_of_rx_bytes,enable_ce,enable_snr,false);
         if(!rx_data.data.empty()) {
-            std::cout << "Packet received. Number of bytes " << rx_data.data.size() << std::endl;
-/*            std::string rx_packet_fn = experiments_folder + subfolder + split_string[rx_split-1] + "/Packet_0.bin";
-            writeBinaryFile(rx_packet_fn,rx_data.data);*/
+            std::cout << "First packet received. Number of bytes " << rx_data.data.size() << std::endl;
             break;
         }
         usleep(100);
@@ -106,6 +101,8 @@ int main() {
         }
         writeBinaryFileDouble(side_info_fn,SNR_values);
     }
+
+    std::cout << "The experiment has finished " << std::endl;
 
     return 1;
 }

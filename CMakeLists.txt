@@ -20,7 +20,7 @@ add_library(HELIX
         lib/ldpc_configuration.cpp
 )
 
-add_executable(sinewave_example examples/sinewave_example.cpp
+add_executable(sinewave_example
         examples/helpers.h
         examples/helpers.cpp)
 
@@ -49,10 +49,18 @@ target_link_libraries(throughput_experiments_rx
         HELIX)
 
 
-add_executable(latency examples/measure_latency_rx.cpp
+add_executable(latency_node_a examples/measure_latency_tx.cpp
         examples/helpers.cpp
         examples/helpers.h)
-target_link_libraries(latency
+
+add_executable(latency_node_b examples/measure_latency_rx.cpp
+        examples/helpers.cpp
+        examples/helpers.h)
+
+target_link_libraries(latency_node_a
+        HELIX)
+
+target_link_libraries(latency_node_b
         HELIX)
 add_executable(sensing_app examples/sensing_app.cpp
         examples/helpers.cpp

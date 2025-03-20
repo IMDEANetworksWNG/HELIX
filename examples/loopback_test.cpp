@@ -8,9 +8,9 @@
 #include <unistd.h>
 
 
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
-const std::string  subfolder = "/CAPTURED_DATA/BER/MED_RATE/test/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
+const std::string  subfolder = "/RX_data/";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){

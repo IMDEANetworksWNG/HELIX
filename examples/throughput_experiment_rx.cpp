@@ -8,8 +8,8 @@
 #include <chrono>
 #include <cmath>
 
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/home/rafael/Mobisys25_experiments/";
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -78,7 +78,7 @@ int main() {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Elapsed time: " << duration.count() << " microseconds" << std::endl;
 
-    int bytes_per_slot=radio_config->tbs/8; //5122 -- 2688 -- 2496 -- 1345
+    int bytes_per_slot=radio_config->tbs/8;
 
     auto tp = static_cast<double>(1.0*(n_recv_pkts)*bytes_per_slot*8/ duration.count());
     std::cout << "Recv packets: " << n_recv_pkts << "/" << n_packets << std::endl;

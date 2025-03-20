@@ -9,8 +9,7 @@
 #include <cmath>
 #include <bits/stdc++.h>
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
-const std::string  subfolder = "/CAPTURED_DATA/HW_ACCEL/FFT_ACCEL/"; ///CAPTURED_DATA/BER/VERY_HIGH_RATE/MED_SNR/
+const std::string  experiments_folder = "matlab/";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
@@ -121,8 +120,6 @@ int main() {
         double sum = accumulate(latency.begin(), latency.end(), 0);
         // Finding average of all elements
         std::cout << "Latency mean: "  << sum / latency.size() << " us. Packets recv: " << recv_pkts  << std::endl;
-        std::string latency_fn = experiments_folder + subfolder + "DATA/Latency.bin";
-        writeBinaryFileDouble(latency_fn,latency);
 
         /*MEASURE THROUGHPUT*/
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_tp - start_tp);

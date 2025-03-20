@@ -9,8 +9,8 @@
 #include <chrono>
 #include <bits/stdc++.h>
 
-const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/GEN_DATA/MED_RATE";
+const char* fpga_ip = "192.168.5.128";
+const std::string  experiments_folder = "matlab/";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7", "SPLIT7_1", "SPLIT7_2", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
@@ -46,7 +46,7 @@ int main() {
     auto radio_parameters=radio.control->get_radio_config();
 
     //load SSB in the block RAM
-    std::string ssb_filename = experiments_folder +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
+    std::string ssb_filename = experiments_folder + "/GEN_DATA/" +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
     std::vector<int16_t> ssb = load_waveform_from_file(ssb_filename);
     radio.control->load_SSB(ssb);
 
@@ -55,7 +55,7 @@ int main() {
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
-    std::string filename = experiments_folder + get_waveform_filename(mod_order, n_re, rate, tx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     usleep(1000);
 
@@ -70,6 +70,7 @@ int main() {
     std::vector<double> latency;
     int recv_pkts=0;
 
+    radio.control->enable_rx_radio(true);
     for(int i=0;i<n_packets;i++){
         auto start = std::chrono::high_resolution_clock::now();
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
@@ -84,15 +85,12 @@ int main() {
         rx_data.data.clear();
         rx_data.data.resize(num_of_rx_bytes);
     }
-
+    radio.control->enable_rx_radio(false);
 
     // Finding sum
     double sum = accumulate(latency.begin(), latency.end(), 0);
 
     // Finding average of all elements
     std::cout << "Latency mean: "  << sum / latency.size() << " us. Packets recv: " << recv_pkts;
-
-    std::string latency_fn = "/mnt/NAS/Rafael/MOBISYS25/Matlab/CAPTURED_DATA/Latency_measurements/Latency_" + split_string[rx_split-1] + ".bin";
-    writeBinaryFileDouble(latency_fn,latency);
     return 1;
 }
