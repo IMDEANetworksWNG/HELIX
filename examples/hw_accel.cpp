@@ -73,7 +73,7 @@ int main() {
     auto radio_parameters = radio.control->get_radio_config();
 
     //Load data to send
-    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, FFT_ACCEL);
+    std::string filename = experiments_folder + "/TX_data/" + get_waveform_filename(mod_order, n_re, rate, FFT_ACCEL);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
 
     uint32_t num_of_rx_bytes = radio.control->get_num_of_rx_bytes(SPLIT_7_2x);

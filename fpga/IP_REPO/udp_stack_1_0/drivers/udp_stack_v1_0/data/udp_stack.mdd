@@ -1,0 +1,10 @@
+
+
+OPTION psf_version = 2.1;
+
+BEGIN DRIVER udp_stack
+	OPTION supported_peripherals = (udp_stack);
+	OPTION copyfiles = all;
+	OPTION VERSION = 1.0;
+	OPTION NAME = udp_stack;
+END DRIVER

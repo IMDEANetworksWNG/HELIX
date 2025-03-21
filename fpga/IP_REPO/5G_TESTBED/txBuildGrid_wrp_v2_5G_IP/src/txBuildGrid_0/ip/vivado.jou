@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Vivado v2022.2_AR000035739_AR000034905 (64-bit)
+# SW Build 3671981 on Fri Oct 14 04:59:54 MDT 2022
+# IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+# Start of session at: Wed Sep 25 17:51:01 2024
+# Process ID: 1708851
+# Current directory: /home/./Documents/PROJECT_5G_TESTBED/IPcreation/VITIS_HLS_TXbuildGrid/txBuildGrid/solution1/impl/ip
+# Command line: vivado -notrace -mode batch -source run_ippack.tcl
+# Log file: /home/./Documents/PROJECT_5G_TESTBED/IPcreation/VITIS_HLS_TXbuildGrid/txBuildGrid/solution1/impl/ip/vivado.log
+# Journal file: /home/./Documents/PROJECT_5G_TESTBED/IPcreation/VITIS_HLS_TXbuildGrid/txBuildGrid/solution1/impl/ip/vivado.jou
+# Running On: avocado, OS: Linux, CPU Frequency: 800.000 MHz, CPU Physical cores: 25, Host memory: 269437 MB
+#-----------------------------------------------------------
+source run_ippack.tcl -notrace

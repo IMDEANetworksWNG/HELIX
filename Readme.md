@@ -53,11 +53,15 @@ HELIX is publicly offered under the GNU General Public License version 3 (GPLv3)
       * ADC -> tile226: channel 0 for I and channel 1 for Q.
     * Refer to ZCU208 documentation for physical locations. Take into account that ZCU208 has differential outputs.
 
+
+<img src="figures/eval_setup.png" alt="drawing" width="600"/>
+
+
 ## Software Setup - C++ Library
 
 ### Recommended dependencies
 
-*   **Operating System:** Ubuntu 22.04 or later.
+*   **Operating System:** Ubuntu 22.04.
 *   **Compiler:** g++ (version >= 11.0)
 *   **CMake:** (version >= 3.0)
 *   **Make:** (version >= GNU Make 4.3)
@@ -109,13 +113,13 @@ cmake ..
 ```bash
 make
 ```
-This will build the `libhelix.so` library and all example executables in the `cpp_library/examples` directory.
+This will build the library and all example executables in the `build/` directory.
 
 ## Running the Examples
 
 Important: Before running any example, ensure the RFSoC is programmed using the `BOOT.bin` file. The IP of the testbed is `192.168.5.128` by default, but it can be configured (TBD). Some 
 
-Each example demonstrates a different aspect of HELIX's capabilities. They are located in the cpp_library/examples directory. Here's a detailed breakdown:
+Each example demonstrates a different aspect of HELIX's capabilities. They are located in the `examples/ directory. Here's a detailed breakdown:
 
 - `loopback`: This example demonstrates basic transmit and receive functionality using different splits. It sets up a simple communication test using just one HELIX node.
   - Usage: `.build/loopback_test` 
@@ -134,3 +138,22 @@ Each example demonstrates a different aspect of HELIX's capabilities. They are l
     - Usage: `.build/hw_accel_exp`
     - Description: For this experiment only one node is needed. The script uses IQ samples of 5G downlink slot from a txt file and feeds them to the OFDM demodulator which performs the FFT and sends back the samples in frequency domain. This same operation is run X number of times. The mean latency and throughput is shown in the console.
 
+## Matlab decoder
+
+This repository includes decoder functions to validate the receiving data together with a set of example slots to transmit in .txt format.
+
+The `CONFIG_5G_DECODER.m()` sets the configuration parameter of the transmitted data. Every functional splitting will have its own decoder.
+
+## (Optional) How to generate the vivado project
+
+Requisites: 
+- Vivado 2022.2
+
+Generate the project by changing the directory in Vivado to the `fpga/` folder and execute the tcl file `HELIX.tcl`
+
+```bash
+cd path-to-folder/fpga
+source path-to-folder/fpga/HELIX.tcl
+```
+
+The script will automatically generate the block design. The 5G PHY processing blocks are all contained at `fpga/IP_REPO`.

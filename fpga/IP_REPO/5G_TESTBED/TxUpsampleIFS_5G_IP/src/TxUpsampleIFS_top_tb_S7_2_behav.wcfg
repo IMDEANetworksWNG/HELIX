@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="TxUpsampleIFS_top_tb_S7_2_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="TxUpsampleIFS_top_tb_S7_2" />
+            <top_module name="fft_hdl_optimized_streaming_pkg" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="600.978334 us"></ZoomStartTime>
+      <ZoomEndTime time="633.628335 us"></ZoomEndTime>
+      <Cursor1Time time="606.440000 us"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="98"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="25" />
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/rstn">
+      <obj_property name="ElementShortName">rstn</obj_property>
+      <obj_property name="ObjectShortName">rstn</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/TxUpsampleIFS_top_tb_S7_2/b0_dataOut">
+      <obj_property name="ElementShortName">b0_dataOut[63:0]</obj_property>
+      <obj_property name="ObjectShortName">b0_dataOut[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b0_triggerOut">
+      <obj_property name="ElementShortName">b0_triggerOut</obj_property>
+      <obj_property name="ObjectShortName">b0_triggerOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b0_validOut">
+      <obj_property name="ElementShortName">b0_validOut</obj_property>
+      <obj_property name="ObjectShortName">b0_validOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b0_readyOut">
+      <obj_property name="ElementShortName">b0_readyOut</obj_property>
+      <obj_property name="ObjectShortName">b0_readyOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b0_lastOut">
+      <obj_property name="ElementShortName">b0_lastOut</obj_property>
+      <obj_property name="ObjectShortName">b0_lastOut</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_dataOut">
+      <obj_property name="ElementShortName">b1_dataOut[63:0]</obj_property>
+      <obj_property name="ObjectShortName">b1_dataOut[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_triggerOut">
+      <obj_property name="ElementShortName">b1_triggerOut</obj_property>
+      <obj_property name="ObjectShortName">b1_triggerOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_validOut">
+      <obj_property name="ElementShortName">b1_validOut</obj_property>
+      <obj_property name="ObjectShortName">b1_validOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_readyOut">
+      <obj_property name="ElementShortName">b1_readyOut</obj_property>
+      <obj_property name="ObjectShortName">b1_readyOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_readyOut_s">
+      <obj_property name="ElementShortName">b1_readyOut_s</obj_property>
+      <obj_property name="ObjectShortName">b1_readyOut_s</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_lastOut">
+      <obj_property name="ElementShortName">b1_lastOut</obj_property>
+      <obj_property name="ObjectShortName">b1_lastOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b1_busyOut">
+      <obj_property name="ElementShortName">b1_busyOut</obj_property>
+      <obj_property name="ObjectShortName">b1_busyOut</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/TxUpsampleIFS_top_tb_S7_2/b11_dataOut">
+      <obj_property name="ElementShortName">b11_dataOut[71:0]</obj_property>
+      <obj_property name="ObjectShortName">b11_dataOut[71:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b11_readyOut">
+      <obj_property name="ElementShortName">b11_readyOut</obj_property>
+      <obj_property name="ObjectShortName">b11_readyOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b11_lastOut">
+      <obj_property name="ElementShortName">b11_lastOut</obj_property>
+      <obj_property name="ObjectShortName">b11_lastOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b11_validOut">
+      <obj_property name="ElementShortName">b11_validOut</obj_property>
+      <obj_property name="ObjectShortName">b11_validOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b11_prog_full">
+      <obj_property name="ElementShortName">b11_prog_full</obj_property>
+      <obj_property name="ObjectShortName">b11_prog_full</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/TxUpsampleIFS_top_tb_S7_2/b2_dataOut">
+      <obj_property name="ElementShortName">b2_dataOut[63:0]</obj_property>
+      <obj_property name="ObjectShortName">b2_dataOut[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b2_validOut">
+      <obj_property name="ElementShortName">b2_validOut</obj_property>
+      <obj_property name="ObjectShortName">b2_validOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b2_readyOut">
+      <obj_property name="ElementShortName">b2_readyOut</obj_property>
+      <obj_property name="ObjectShortName">b2_readyOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b2_triggerOut">
+      <obj_property name="ElementShortName">b2_triggerOut</obj_property>
+      <obj_property name="ObjectShortName">b2_triggerOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b2_lastOut">
+      <obj_property name="ElementShortName">b2_lastOut</obj_property>
+      <obj_property name="ObjectShortName">b2_lastOut</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/TxUpsampleIFS_top_tb_S7_2/b2_busyOut">
+      <obj_property name="ElementShortName">b2_busyOut</obj_property>
+      <obj_property name="ObjectShortName">b2_busyOut</obj_property>
+   </wvobject>
+</wave_config>

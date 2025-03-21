@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Vivado v2022.2_AR000035739_AR000034905 (64-bit)
+# SW Build 3671981 on Fri Oct 14 04:59:54 MDT 2022
+# IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+# Start of session at: Thu Mar  6 12:06:13 2025
+# Process ID: 1522587
+# Current directory: /home/./Vivado/ZCU208/ip_creation/tx_buffer/project/tx_buffer.runs/synth_1
+# Command line: vivado -log tx_buffer_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source tx_buffer_top.tcl
+# Log file: /home/./Vivado/ZCU208/ip_creation/tx_buffer/project/tx_buffer.runs/synth_1/tx_buffer_top.vds
+# Journal file: /home/./Vivado/ZCU208/ip_creation/tx_buffer/project/tx_buffer.runs/synth_1/vivado.jou
+# Running On: srv-wng-avocado, OS: Linux, CPU Frequency: 1393.693 MHz, CPU Physical cores: 25, Host memory: 269437 MB
+#-----------------------------------------------------------
+source tx_buffer_top.tcl -notrace

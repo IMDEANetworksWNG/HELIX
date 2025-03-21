@@ -46,7 +46,7 @@ int main() {
     auto radio_parameters=radio.control->get_radio_config();
 
     //load SSB in the block RAM
-    std::string ssb_filename = experiments_folder + "/GEN_DATA/" +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
+    std::string ssb_filename = experiments_folder + "/TX_data/" +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
     std::vector<int16_t> ssb = load_waveform_from_file(ssb_filename);
     radio.control->load_SSB(ssb);
 
@@ -55,7 +55,7 @@ int main() {
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
-    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
+    std::string filename = experiments_folder + "/TX_data/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     usleep(1000);
 

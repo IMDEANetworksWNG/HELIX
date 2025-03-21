@@ -1,0 +1,133 @@
+#-----------------------------------------------------------
+# Vivado v2022.2_AR000035739_AR000034905 (64-bit)
+# SW Build 3671981 on Fri Oct 14 04:59:54 MDT 2022
+# IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
+# Start of session at: Thu Mar  6 12:06:13 2025
+# Process ID: 1522587
+# Current directory: /home/./Vivado/ZCU208/ip_creation/tx_buffer/project/tx_buffer.runs/synth_1
+# Command line: vivado -log tx_buffer_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source tx_buffer_top.tcl
+# Log file: /home/./Vivado/ZCU208/ip_creation/tx_buffer/project/tx_buffer.runs/synth_1/tx_buffer_top.vds
+# Journal file: /home/./Vivado/ZCU208/ip_creation/tx_buffer/project/tx_buffer.runs/synth_1/vivado.jou
+# Running On: srv-wng-avocado, OS: Linux, CPU Frequency: 1393.693 MHz, CPU Physical cores: 25, Host memory: 269437 MB
+#-----------------------------------------------------------
+source tx_buffer_top.tcl -notrace
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1306]}  -suppress '. The existing rule will be replaced.
+WARNING: [Common 17-1361] You have specified a new message control rule that is equivalent to an existing rule with attributes ' -id {[BD 41-1271]}  -suppress '. The existing rule will be replaced.
+CRITICAL WARNING: [Common 17-1355] You are suppressing all messages of type 'WARNING'. You may potentially disregard important DRC, CDC, and implementation messages that can negatively impact your design.  If this is not desired, please run 'reset_msg_config -suppress -severity {WARNING}' to undo this change.
+CRITICAL WARNING: [Common 17-1355] You are suppressing all messages of type 'CRITICAL WARNING'. You may potentially disregard important DRC, CDC, and implementation messages that can negatively impact your design.  If this is not desired, please run 'reset_msg_config -suppress -severity {CRITICAL WARNING}' to undo this change.
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 2563.090 ; gain = 327.770 ; free physical = 6763 ; free virtual = 30432
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3540.133; parent = 2567.062; children = 973.070
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 2629.027 ; gain = 393.707 ; free physical = 6689 ; free virtual = 30360
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3602.102; parent = 2629.031; children = 973.070
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 2646.840 ; gain = 411.520 ; free physical = 6689 ; free virtual = 30360
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3619.914; parent = 2646.844; children = 973.070
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 2646.840 ; gain = 411.520 ; free physical = 6689 ; free virtual = 30360
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3619.914; parent = 2646.844; children = 973.070
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2646.840 ; gain = 0.000 ; free physical = 6689 ; free virtual = 30360
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2769.527 ; gain = 0.000 ; free physical = 6656 ; free virtual = 30327
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2769.527 ; gain = 0.000 ; free physical = 6656 ; free virtual = 30327
+Finished Constraint Validation : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 2769.527 ; gain = 534.207 ; free physical = 6662 ; free virtual = 30332
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3710.586; parent = 2737.516; children = 973.070
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 2769.527 ; gain = 534.207 ; free physical = 6662 ; free virtual = 30332
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3710.586; parent = 2737.516; children = 973.070
+Applied set_property KEEP_HIERARCHY = SOFT for uut. (constraint file  auto generated constraint).
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 2769.527 ; gain = 534.207 ; free physical = 6662 ; free virtual = 30332
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3710.586; parent = 2737.516; children = 973.070
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 2769.527 ; gain = 534.207 ; free physical = 6662 ; free virtual = 30333
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3710.586; parent = 2737.516; children = 973.070
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 2769.527 ; gain = 534.207 ; free physical = 6672 ; free virtual = 30346
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2111.603; parent = 1869.458; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 3710.586; parent = 2737.516; children = 973.070
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 3076.957 ; gain = 841.637 ; free physical = 6390 ; free virtual = 30065
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2583.968; parent = 2341.868; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4050.031; parent = 3076.961; children = 973.070
+Finished Timing Optimization : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 3076.957 ; gain = 841.637 ; free physical = 6390 ; free virtual = 30065
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.042; parent = 2341.942; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4050.031; parent = 3076.961; children = 973.070
+Finished Technology Mapping : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 3095.988 ; gain = 860.668 ; free physical = 6382 ; free virtual = 30057
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.440; parent = 2342.341; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4069.062; parent = 3095.992; children = 973.070
+Finished IO Insertion : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.870; parent = 2342.771; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.901; parent = 2342.802; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.909; parent = 2342.810; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.987; parent = 2342.888; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2584.987; parent = 2342.888; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2585.003; parent = 2342.903; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+
+Report Cell Usage: 
++------+---------------+------+
+|      |Cell           |Count |
++------+---------------+------+
+|1     |axis_data_fifo |     1|
+|2     |IBUF           |    69|
+|3     |OBUF           |     4|
+|4     |OBUFT          |    64|
++------+---------------+------+
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 3101.926 ; gain = 866.605 ; free physical = 6398 ; free virtual = 30073
+Synthesis current peak Physical Memory [PSS] (MB): peak = 2585.034; parent = 2342.935; children = 242.145
+Synthesis current peak Virtual Memory [VSS] (MB): peak = 4075.000; parent = 3101.930; children = 973.070
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 3115.863 ; gain = 0.000 ; free physical = 6547 ; free virtual = 30222
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 3145.582 ; gain = 0.000 ; free physical = 6492 ; free virtual = 30167
+synth_design: Time (s): cpu = 00:00:24 ; elapsed = 00:00:24 . Memory (MB): peak = 3145.582 ; gain = 1820.984 ; free physical = 6619 ; free virtual = 30294

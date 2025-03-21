@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="OFDM_mod_TOP_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="OFDM_mod_TOP_tb" />
+            <top_module name="fft_hdl_optimized_streaming_pkg" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="109865000000fs"></ZoomStartTime>
+      <ZoomEndTime time="465865000001fs"></ZoomEndTime>
+      <Cursor1Time time="219365000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="130"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="24" />
+   <wvobject fp_name="/OFDM_mod_TOP_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/b0_trigger" type="logic">
+      <obj_property name="ElementShortName">b0_trigger</obj_property>
+      <obj_property name="ObjectShortName">b0_trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/dataIn_re" type="array">
+      <obj_property name="ElementShortName">dataIn_re[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dataIn_re[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/dataIn_im" type="array">
+      <obj_property name="ElementShortName">dataIn_im[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dataIn_im[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/validIn" type="logic">
+      <obj_property name="ElementShortName">validIn</obj_property>
+      <obj_property name="ObjectShortName">validIn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/dataOut_re" type="array">
+      <obj_property name="ElementShortName">dataOut_re[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dataOut_re[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/dataOut_im" type="array">
+      <obj_property name="ElementShortName">dataOut_im[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dataOut_im[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/validOut" type="logic">
+      <obj_property name="ElementShortName">validOut</obj_property>
+      <obj_property name="ObjectShortName">validOut</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/readyOut" type="logic">
+      <obj_property name="ElementShortName">readyOut</obj_property>
+      <obj_property name="ObjectShortName">readyOut</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/lastOut" type="logic">
+      <obj_property name="ElementShortName">lastOut</obj_property>
+      <obj_property name="ObjectShortName">lastOut</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/triggerOut" type="logic">
+      <obj_property name="ElementShortName">triggerOut</obj_property>
+      <obj_property name="ObjectShortName">triggerOut</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b3_state" type="other">
+      <obj_property name="ElementShortName">b3_state</obj_property>
+      <obj_property name="ObjectShortName">b3_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b3_countNFFT" type="other">
+      <obj_property name="ElementShortName">b3_countNFFT</obj_property>
+      <obj_property name="ObjectShortName">b3_countNFFT</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b3_countCP" type="other">
+      <obj_property name="ElementShortName">b3_countCP</obj_property>
+      <obj_property name="ObjectShortName">b3_countCP</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b3_countSyms" type="other">
+      <obj_property name="ElementShortName">b3_countSyms</obj_property>
+      <obj_property name="ObjectShortName">b3_countSyms</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_1_dataOut" type="array">
+      <obj_property name="ElementShortName">b2_1_dataOut[63:0]</obj_property>
+      <obj_property name="ObjectShortName">b2_1_dataOut[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_2_dataOut" type="array">
+      <obj_property name="ElementShortName">b2_2_dataOut[63:0]</obj_property>
+      <obj_property name="ObjectShortName">b2_2_dataOut[63:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_1_full" type="logic">
+      <obj_property name="ElementShortName">b2_1_full</obj_property>
+      <obj_property name="ObjectShortName">b2_1_full</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_1_empty" type="logic">
+      <obj_property name="ElementShortName">b2_1_empty</obj_property>
+      <obj_property name="ObjectShortName">b2_1_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_2_full" type="logic">
+      <obj_property name="ElementShortName">b2_2_full</obj_property>
+      <obj_property name="ObjectShortName">b2_2_full</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_2_empty" type="logic">
+      <obj_property name="ElementShortName">b2_2_empty</obj_property>
+      <obj_property name="ObjectShortName">b2_2_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b2_2_prog_full" type="logic">
+      <obj_property name="ElementShortName">b2_2_prog_full</obj_property>
+      <obj_property name="ObjectShortName">b2_2_prog_full</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b4_1_full" type="logic">
+      <obj_property name="ElementShortName">b4_1_full</obj_property>
+      <obj_property name="ObjectShortName">b4_1_full</obj_property>
+   </wvobject>
+   <wvobject fp_name="/OFDM_mod_TOP_tb/UUT/b4_2_full" type="logic">
+      <obj_property name="ElementShortName">b4_2_full</obj_property>
+      <obj_property name="ObjectShortName">b4_2_full</obj_property>
+   </wvobject>
+</wave_config>
