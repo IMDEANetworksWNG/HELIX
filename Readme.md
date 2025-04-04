@@ -1,7 +1,7 @@
 # HELIX: High-Speed Real-Time Experimentation Platform for 6G Wireless Networks - Artifacts
 
 This repository contains the artifacts for the paper "HELIX: High-speed Real-Time Experimentation
-Platform for 6G Wireless Networks" presented at Mobisys '25.  These artifacts include the C++ library, Vivado project for the FPGA design, and the baremetal C code for the ARM processor on the RFSoC.  This allows researchers to reproduce our results and further explore advanced wireless technologies using HELIX.
+Platform for 6G Wireless Networks" submitted at Mobisys '25.  These artifacts include the C++ library, Vivado project for the FPGA design, and the baremetal C code for the ARM processor on the RFSoC.  This allows researchers to reproduce our results and further explore advanced wireless technologies using HELIX.
 
 
 ## Introduction
@@ -43,8 +43,9 @@ HELIX is publicly offered under the GNU General Public License version 3 (GPLv3)
 
 1.  **RFSoC Connection:**
     - Connect the RFSoC board to the host PC via Ethernet cable (10 Gbps port).
-      - Set jumper JXX on to enable 10GbE port number XX and use this one.
-    *   Load the BOOT.bin file into an SD card and set the RFSoC to [SD boot mode](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/569017820/RF+DC+Evaluation+Tool+for+ZCU208+board+-+Quick+Start#SD-Card).
+      - Set jumper J32 ON to enable SPF+ 10GbE port number 2
+        and use this one - looking at the J29 front opening, connector at the right top corner.
+    *   Load the BOOT.bin file into an SD card and set the RFSoC to [SD boot mode](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/569017820/RF+DC+Evaluation+Tool+for+ZCU208+board+-+Quick+Start#Jumpers-and-Switch-Settings).
     *   Power on the RFSoC board.
 2.  **RF Front End Connections:**
     *   Connect the RF front ends to the appropriate RFSoC AD/DA converter ports using SMA cables. 
@@ -65,10 +66,11 @@ HELIX is publicly offered under the GNU General Public License version 3 (GPLv3)
 *   **Compiler:** g++ (version >= 11.0)
 *   **CMake:** (version >= 3.0)
 *   **Make:** (version >= GNU Make 4.3)
+*   **Matlab(optional)**: version 2022b
 
 ```bash
 sudo apt update
-sudo apt install g++ cmake make libboost-dev #and other required dependencies
+sudo apt install g++ cmake make libboost-dev
 ```
 
 ### Performance tuning
@@ -98,7 +100,6 @@ Although Helix can be build and executed using bash commands, it is suggested to
 1. Clone the repository:
 ```bash
 git clone 
-cd cpp_library
 ```
 2. Create a Build Directory:
 ```bash

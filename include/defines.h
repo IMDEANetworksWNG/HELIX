@@ -77,13 +77,15 @@
 #define MOD_256QAM  8
 
 // Split definitions
+#define SSB_FILE 	0
 #define SPLIT_6 	1
 #define SPLIT_7_3 	2
 #define SPLIT_7_2 	3
 #define SPLIT_7_2x 	4
 #define SPLIT_8	 	5
-#define SSB_FILE 	7
 #define FFT_ACCEL 	6
+#define LDPC_ACCEL 	7
+#define ALL_RX_ACCEL	8
 #define HW_ACCEL_TX	6
 
 #endif //HELIX_DEFINES_H

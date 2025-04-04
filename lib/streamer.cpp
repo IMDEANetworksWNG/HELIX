@@ -3,6 +3,7 @@
 #include "cmath"
 #include <cstring>
 #include <unistd.h>
+#include <chrono>
 
 namespace helix {
     void streamer::unpack_metadata(slot_str* slot,bool ce_enable, bool energy_enable, bool cfo_enable){
@@ -95,7 +96,7 @@ namespace helix {
     }
     void streamer::transmit(const std::vector<std::vector<int16_t>>& data, ssize_t num_bytes_per_slot){
         ssize_t total_bytes=data.size()*num_bytes_per_slot;
-        if(triggerTX(total_bytes)){
+        if(triggerTX(total_bytes)) {
             for (auto slot : data) {
                 udp->data_socket.send(slot.data(),num_bytes_per_slot);
                 usleep(1);
@@ -104,8 +105,10 @@ namespace helix {
         }
     }
 
+    //void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable, std::chrono::time_point<std::chrono::high_resolution_clock>& stop ) {
     void streamer::receive(slot_str* slot, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable) {
         if(triggerRX(num_bytes, ce_enable, energy_enable, cfo_enable,1)){
+            //stop = std::chrono::high_resolution_clock::now();
             ssize_t recv_bytes=udp->data_socket.recv(slot->data.data(),num_bytes);
             if(recv_bytes<num_bytes) {
                 STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
