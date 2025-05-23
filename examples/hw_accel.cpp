@@ -9,7 +9,7 @@
 #include <cmath>
 #include <bits/stdc++.h>
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
-const std::string  experiments_folder = "matlab/RX_data";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
@@ -58,8 +58,8 @@ int main() {
     uint8_t rx_split = LDPC_ACCEL;
     uint8_t tx_split = HW_ACCEL_TX;
     uint8_t n_re = 145;
-    float rate = 490.0 / 1024;
-    uint8_t mod_order = MOD_QPSK;
+    float rate = 921.0 / 1024;
+    uint8_t mod_order = MOD_256QAM;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss = 1024 * 8;
@@ -67,13 +67,16 @@ int main() {
 
     radio.control->set_streaming_param(stream_config);
 
+    std::cout << "Configuring radio for --> Rate: " << std::to_string(rate) << " -- PRB: " << std::to_string(n_re)
+ << " -- Mod Order: " << std::to_string(mod_order) << std::endl;
+
     //Configure the transmitter and receiver blocks and split functionalities
     radio.control->configure_radio(rx_split, tx_split, BW_MODE_HIGH,
-                                   n_re, MOD_QPSK, rate, 0);
+                                   n_re, mod_order, rate, 0);
     auto radio_parameters = radio.control->get_radio_config();
 
     //Load data to send
-    std::string filename = experiments_folder + "/TX_data/" + get_waveform_filename(mod_order, n_re, rate, rx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, rx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
 
     uint32_t num_of_rx_bytes = radio.control->get_num_of_rx_bytes(SPLIT_6);
@@ -82,7 +85,7 @@ int main() {
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);
 
-    int n_packets = 10000;
+    int n_packets = 1000;
     std::vector<double> latency;
     int recv_pkts=0;
 
@@ -90,8 +93,6 @@ int main() {
     latency.reserve(n_packets);
 
     accel_data(rx_data, num_of_rx_bytes,tx_data,radio);
-    rx_data.data.clear();
-    rx_data.data.resize(num_of_rx_bytes);
 
     auto start_tp = std::chrono::high_resolution_clock::now();
 
@@ -101,6 +102,8 @@ int main() {
         accel_data(rx_data, num_of_rx_bytes, tx_data, radio);
 
         if (!rx_data.data.empty()) {
+            /*std::string rx_packet_fn = experiments_folder + "/CAPTURED_DATA/HW_ACCEL/LDPC_ACCEL/DATA/Packet_" + std::to_string(i) + ".bin";
+            writeBinaryFile(rx_packet_fn,rx_data.data);*/
             auto end = std::chrono::high_resolution_clock::now();
             latency.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
             recv_pkts++;

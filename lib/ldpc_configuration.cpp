@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include "../include/defines.h"
+
 
 bgn_info getBGNInfo(int A, double R) {
     bgn_info info;
@@ -21,8 +23,11 @@ bgn_info getBGNInfo(int A, double R) {
         L = 24;
         info.CRC = "24A";
     } else {
-        L = 16;
-        info.CRC = "16";
+        /*L = 16;
+        info.CRC = "16";*/
+        L = 24;
+        info.CRC = "24A";
+
     }
 
     // Get the length of transport block after CRC attachment
@@ -300,7 +305,13 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
         std::cerr << "FPGA_IP: LDPC TargetCodeRate must be greater than 316/1024, excluding from 539/1024 to 552/1024\n";
     }
 
-    ldpc_config = getSCHInfo(tbs,TargetCodeRate);
+    // Assuming CRC length to be 24
+    float ldpc_factor =modOrder/2.0;
+    int padding = std::ceil((tbs+24)/ldpc_factor)*ldpc_factor-(tbs+24);
+    int tbsFac= (tbs+padding)/ldpc_factor;
+    ldpc_config = getSCHInfo(tbsFac-24+(24/ldpc_factor),TargetCodeRate);
+    ldpc_config.modFactor=ldpc_factor;
+    ldpc_config.padding = padding;
 
     if (ldpc_config.bgn > 1) {
         std::cerr << "FPGA_IP: LDPC only supports base graph 1\n";
@@ -310,14 +321,14 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
         std::cerr << "FPGA_IP: LDPC does not consider a zero fillers case\n";
     }
 
-    std::vector<double> in(nLLRs);
-    for (int i = 0; i < nLLRs; ++i) {
+    std::vector<double> in(nLLRs/ldpc_config.modFactor);
+    for (int i = 0; i < nLLRs/ldpc_config.modFactor; ++i) {
         in[i] = i + 1;
     }
 
-    ldpc_config.E = nrRateRecoverLDPC(in, tbs, TargetCodeRate, 0, modOrder, 1);
+    ldpc_config.E = nrRateRecoverLDPC(in, tbsFac-24+(24/ldpc_config.modFactor), TargetCodeRate, 0, MOD_QPSK, 1);
 
-    ldpc_config.modOrder = modOrder;
+    ldpc_config.modOrder = MOD_QPSK;
     ldpc_config.maxIter = 10;
     ldpc_config.ssr=16;
 
@@ -353,6 +364,10 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
          //   Kd_tranf.assign(ldpc_config.C, std::ceil((ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) / static_cast<double>(ldpc_config.ssr)));
        // lastKd.assign(ldpc_config.C, (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr == 0 ? ldpc_config.ssr : (ldpc_config.Kd - ldpc_config.E[0] / ldpc_config.modOrder) % ldpc_config.ssr);
         F_R = 0;
+    }
+
+    for (int i = 0; i < ldpc_config.C; i++) {
+        ldpc_config.regs.KdOffset.push_back(Kd_tranf[0] - Kd_tranf[i]);
     }
 
     // Calculate E_tranf and lastE
@@ -415,6 +430,11 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
         if (ii < ldpc_config.C - 1) {
             rF1[ii + 1] = rL2[ii] == ldpc_config.ssr ? ldpc_config.ssr : ldpc_config.ssr - rL2[ii];
         }
+
+        if ((rF1[ii] + rL2[ii] < (ldpc_config.ssr + lastE[ii])) && (jump2[ii] == 1)) {
+            jump1[ii] = 0;
+            ldpc_config.regs.KdOffset[ii]=ldpc_config.regs.KdOffset[ii]+1;
+        }
     }
 
     // Calculate punctured, fillers, and zeros values
@@ -427,7 +447,7 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
 
     // Check if N is a multiple of SSR
     if (ldpc_config.N % ldpc_config.ssr != 0) {
-        std::cerr <<"FPGA_IP: LDPC N is not a multiplier or SSR factor.";
+        std::cerr <<"FPGA_IP: LDPC N is not a multiplier or SSR ldpc_config.modFactor.";
     }
 
     ldpc_config.regs.Kdm1=(Kd_tranf[0]-1-1);
@@ -456,6 +476,14 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
 
     ldpc_config.regs.CM1= ldpc_config.C-1;
     ldpc_config.regs.F_R= F_R;
+
+    if (nLLRs/ldpc_config.modFactor%1 == 0)
+        ldpc_config.nLLRs_per_block = nLLRs/ldpc_config.modFactor;
+    else {
+        std::cerr <<"Tx.nLLRs/Tx.ldpcParam.factor is not giving integer number";
+        exit(0);
+    }
+
 
     /* ------------------------------------------------------------------------*/
     std::vector<int> a = {2, 3, 5, 7, 9, 11, 13, 15};  // Equivalent of `a` in MATLAB

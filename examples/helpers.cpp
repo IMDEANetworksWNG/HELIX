@@ -104,13 +104,13 @@ std::string get_waveform_filename(uint8_t mod_order, uint8_t n_re, float rate, u
             filename = "/QPSK/";
             break;
         case MOD_16QAM:
-            filename = "/16QAM";
+            filename = "/16QAM/";
             break;
         case MOD_64QAM:
-            filename = "/64QAM";
+            filename = "/64QAM/";
             break;
         case MOD_256QAM:
-            filename = "/256QAM";
+            filename = "/256QAM/";
             break;
     }
 

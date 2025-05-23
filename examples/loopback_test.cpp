@@ -9,8 +9,9 @@
 
 
 const char* fpga_ip = "192.168.5.128";
-const std::string  experiments_folder = "matlab/";
-const std::string  subfolder = "/RX_data/";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
+const std::string  subfolder = "/CAPTURED_DATA/HW_ACCEL/LDPC_ACCEL/DATA/Loopback";
+//const std::string  subfolder = "/CAPTURED_DATA/HW_ACCEL/FFT_ACCEL/DATA/";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
@@ -25,10 +26,10 @@ int main() {
     auto radio=helix::helix(fpga_ip);
 
     uint8_t rx_split=SPLIT_6;
-    uint8_t tx_split=SPLIT_7_3;
-    uint8_t n_re = 145;
-    float rate = 490.0/1024;
-    uint8_t mod_order = MOD_QPSK;
+    uint8_t tx_split=SPLIT_7_2x;
+    float rate = 430.0/1024;
+    uint8_t mod_order = MOD_256QAM;
+    uint8_t n_re=145;
 
     //set udp ifg and mss
     helix::stream_str stream_config{};
@@ -37,6 +38,10 @@ int main() {
     stream_config.radio_tx_mss=pow(2,32)*8-1;
     stream_config.radio_tx_ifg=0;
     radio.control->set_streaming_param(stream_config);
+
+    std::cout << "Configuring radio for --> RX split: "  <<  split_string[rx_split-1] <<
+        " -- TX split: " << split_string[tx_split-1] << " -- Rate: " << std::to_string(rate) << " -- PRB: " << std::to_string(n_re)
+     << " -- Mod Order: " << std::to_string(mod_order) << std::endl;
 
     //Configure the transmitter and receiver blocks and split functionalities
     radio.control->configure_radio(rx_split,tx_split, BW_MODE_HIGH,
@@ -53,7 +58,7 @@ int main() {
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
-    std::string filename = experiments_folder + "/TX_data/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
 
     uint32_t num_of_rx_bytes=radio.control->get_num_of_rx_bytes(rx_split);

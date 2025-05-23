@@ -191,12 +191,12 @@ void radio_control::set_rx_phase_tracking_param(bool bw, ptrs_str ptrs_params, d
     cmdManager->writeReg(RX_PTRS_BLOCK_ADDR+0x8,value);
 }
 
-/*void radio_control::set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order) {
-    cmdManager->writeReg(RX_DEMAP_ADDR+0x10,mod_order);
-}*/
 void radio_control::set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order) {
-    cmdManager->writeReg(RX_DEMAP_ADDR,ceil((num_blocks*mod_order/4.0)));
+    cmdManager->writeReg(RX_DEMAP_ADDR,mod_order);
 }
+/*void radio_control::set_rx_demap_param(uint16_t num_blocks, uint16_t mod_order) {
+    cmdManager->writeReg(RX_DEMAP_ADDR,ceil((num_blocks*mod_order/4.0)));
+}*/
 
 void radio_control::set_rx_ldcp_param(ldpc_info params) {
     uint32_t value= params.regs.Kdm1 |
@@ -256,6 +256,19 @@ void radio_control::set_rx_ldcp_param(ldpc_info params) {
     value= params.regs.ldpc_ctrl_regs >> 16 |
            params.regs.F_R << 24;
     cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x28,value);
+
+    value= params.modFactor |
+           params.padding << 4 |
+           params.nLLRs_per_block << 8 ;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x2C,value);
+
+    value= params.regs.KdOffset[0] |
+           params.regs.KdOffset[1] << 2 |
+           params.regs.KdOffset[2] << 4 |
+           params.regs.KdOffset[3] << 6 |
+           params.regs.KdOffset[4] << 8 |
+           params.regs.KdOffset[5]  << 10;
+    cmdManager->writeReg(RX_LDCP_DECODER_ADDR+0x30,value);
 
 
 }
@@ -421,7 +434,7 @@ void radio_control::configure_rx_blocks(uint8_t rx_split){
 
     //configure ldpc decoder
     auto ldpc_config = get_LDPC_config(radio_config.tbs, radio_config.code_rate,radio_config.num_sch*radio_config.mod_order,radio_config.mod_order);
-    radio_config.ldpc_segmented_length= ldpc_config.K*ldpc_config.C;
+    radio_config.ldpc_segmented_length= ldpc_config.K*ldpc_config.C*ldpc_config.modFactor;
     set_rx_ldcp_param(ldpc_config);
 }
 

@@ -78,7 +78,7 @@ ssize_t udp_socket::recv(void* data, ssize_t num_bytes) {
                                   (sockaddr*)(&serverAddr), &server_addr_len);
         if (received_bytes == -1) {
             DEBUG_PRINT("UDP_DEBUG: Error receiving data");
-            return -1;  // Return -1 to indicate an error, rather than a partial read
+            return totalReceived;  // Return -1 to indicate an error, rather than a partial read
         }
         totalReceived += received_bytes;
     }

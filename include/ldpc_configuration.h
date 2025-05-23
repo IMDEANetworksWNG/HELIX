@@ -79,6 +79,8 @@ struct ldpc_regs{
     uint16_t CM1=0;
     /** @brief F_R register value. */
     uint16_t F_R=0;
+    /** @brief Kd_offset register values for each code block. */
+    std::vector<uint16_t> KdOffset;
 };
 
 /**
@@ -108,6 +110,12 @@ struct ldpc_info {
     uint16_t bgn;
     /** @brief Number of samples per cycle. */
     uint16_t ssr;
+    /** @brief TO DO: LDPC is processing tbs as a factor of QPSK. */
+    uint16_t modFactor;
+    /** @brief TO DO: LDPC is processing tbs as a factor of QPSK. */
+    uint32_t nLLRs_per_block;
+    /** @brief TO DO: LDPC is processing tbs as a factor of QPSK. */
+    uint8_t padding;
     /** @brief LDPC registers configuration. */
     ldpc_regs regs;
 };
