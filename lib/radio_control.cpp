@@ -435,6 +435,7 @@ void radio_control::configure_rx_blocks(uint8_t rx_split){
     //configure ldpc decoder
     auto ldpc_config = get_LDPC_config(radio_config.tbs, radio_config.code_rate,radio_config.num_sch*radio_config.mod_order,radio_config.mod_order);
     radio_config.ldpc_segmented_length= ldpc_config.K*ldpc_config.C*ldpc_config.modFactor;
+    radio_config.ldpc_code_blocks=ldpc_config.C*ldpc_config.modFactor;
     set_rx_ldcp_param(ldpc_config);
 }
 

@@ -161,6 +161,8 @@ namespace helix {
         uint16_t            offsetSSB;
         /** @brief Length of the LDPC encoded segment. */
         uint32_t            ldpc_segmented_length;
+        /** @brief Length of the LDPC encoded segment. */
+        uint32_t            ldpc_code_blocks;
         /** @brief Inter-frame spacing at the transmitter in clock cycles. */
         float               ifs;
         /** @brief Code rate. */

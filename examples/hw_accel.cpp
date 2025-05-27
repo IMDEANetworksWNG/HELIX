@@ -22,7 +22,7 @@ helix::slot_str shared_rx_data(0, 0); // Properly initialize sizes
 std::mutex rx_data_mutex;
 
 void receiver_thread(helix::slot_str& rx_data, int num_of_rx_bytes, helix::helix& radio) {
-    radio.stream->receive(&rx_data, num_of_rx_bytes, false, false, false);
+    radio.stream->receive(&rx_data, num_of_rx_bytes, true, true, (uint8_t)radio.control->get_radio_config()->ldpc_code_blocks);
 
     // Protect access to shared_rx_data with a mutex
     std::lock_guard<std::mutex> lock(rx_data_mutex);
@@ -59,7 +59,7 @@ int main() {
     uint8_t tx_split = HW_ACCEL_TX;
     uint8_t n_re = 145;
     float rate = 921.0 / 1024;
-    uint8_t mod_order = MOD_256QAM;
+    uint8_t mod_order = MOD_64QAM;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss = 1024 * 8;
@@ -80,17 +80,20 @@ int main() {
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
 
     uint32_t num_of_rx_bytes = radio.control->get_num_of_rx_bytes(SPLIT_6);
-    helix::slot_str rx_data(num_of_rx_bytes, radio_parameters->ofdm.num_sc * 4);
+    helix::slot_str rx_data(num_of_rx_bytes, radio_parameters->ldpc_code_blocks); //Hardcoded for HW accel experiments
 
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);
 
     int n_packets = 1000;
     std::vector<double> latency;
+    std::vector<double> latency_fpga;
+    std::vector<std::vector<uint8_t>> num_ldpc_iterations(n_packets, std::vector<uint8_t>(radio_parameters->ldpc_code_blocks));
     int recv_pkts=0;
 
     pid_t main_pid = getpid();
     latency.reserve(n_packets);
+    latency_fpga.reserve(n_packets);
 
     accel_data(rx_data, num_of_rx_bytes,tx_data,radio);
 
@@ -102,10 +105,10 @@ int main() {
         accel_data(rx_data, num_of_rx_bytes, tx_data, radio);
 
         if (!rx_data.data.empty()) {
-            /*std::string rx_packet_fn = experiments_folder + "/CAPTURED_DATA/HW_ACCEL/LDPC_ACCEL/DATA/Packet_" + std::to_string(i) + ".bin";
-            writeBinaryFile(rx_packet_fn,rx_data.data);*/
             auto end = std::chrono::high_resolution_clock::now();
             latency.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+            latency_fpga.push_back(rx_data.ldpc_latency*1e6);
+            num_ldpc_iterations[i]=rx_data.num_iterations;
             recv_pkts++;
         }
     }
@@ -118,7 +121,11 @@ int main() {
         /*MEASURE LATENCY*/
         double sum = accumulate(latency.begin(), latency.end(), 0);
         // Finding average of all elements
-        std::cout << "Latency mean: "  << sum / latency.size() << " us. Packets recv: " << recv_pkts  << std::endl;
+        std::cout << "Total latency mean: "  << sum / latency.size() << " us. Packets recv: " << recv_pkts  << std::endl;
+
+        sum = accumulate(latency_fpga.begin(), latency_fpga.end(), 0);
+        // Finding average of all elements
+        std::cout << "LDPC latency mean: "  << sum / latency_fpga.size() << " us. Packets recv: " << recv_pkts  << std::endl;
 
         /*MEASURE THROUGHPUT*/
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_tp - start_tp);

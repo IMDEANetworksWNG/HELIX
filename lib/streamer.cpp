@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <chrono>
 
+#include "../include/radio_control.h"
+
 namespace helix {
     void streamer::unpack_metadata(slot_str* slot,bool ce_enable, bool energy_enable, bool cfo_enable){
         ssize_t num_bytes=0;
@@ -36,6 +38,31 @@ namespace helix {
         if (cfo_enable){
             int32_t cfo=(data[3] << 24) | (data[2] << 16) |(data[1] << 8) | (data[0]);
             slot->cfo=round(240 * 1e3 * (cfo/pow(2,15)) / (2*M_PI));
+        }
+    }
+
+    void streamer::unpack_metadata_hw_accel(slot_str* slot,bool iter_enable, bool latency_enable, uint8_t num_code_blocks){
+        ssize_t num_bytes=0;
+        if (iter_enable)num_bytes+=num_code_blocks*8;
+        if (latency_enable) num_bytes+=4;
+
+        if (!num_bytes) return ;
+
+        auto data= new uint8_t [num_bytes];
+
+        ssize_t recv_bytes=udp->metadata_socket.recv(data,num_bytes);
+        if(recv_bytes<num_bytes)
+            STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+
+        if (iter_enable){
+            for (int i =0; i < num_code_blocks; i++) {
+                slot->num_iterations.push_back(data[0] & 0b01111111);
+                data+=8;
+            }
+        }
+        if (latency_enable){
+            int32_t clock_cyles=(data[3] << 24) | (data[2] << 16) |(data[1] << 8) | (data[0]);
+            slot->ldpc_latency=clock_cyles/SAMPLING_CLK_ADC;
         }
     }
 
@@ -122,6 +149,24 @@ namespace helix {
             return;
         }
     }
+
+    void streamer::receive(slot_str* slot, ssize_t num_bytes, bool iter_enable, bool latency_enable, uint8_t num_ldpc_blocks) {
+        if(triggerRX(num_bytes, iter_enable, latency_enable, false,1)){
+            //stop = std::chrono::high_resolution_clock::now();
+            ssize_t recv_bytes=udp->data_socket.recv(slot->data.data(),num_bytes);
+            if(recv_bytes<num_bytes) {
+                STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+                slot->data.clear();
+                return;
+            }
+            slot->data.resize(recv_bytes);
+            if((iter_enable | latency_enable) & !slot->data.empty()){
+                unpack_metadata_hw_accel(slot,iter_enable,latency_enable,num_ldpc_blocks);
+            }
+            return;
+        }
+    }
+
 
     void streamer::receive(std::vector<slot_str>* slot_burst, ssize_t num_bytes_per_slot, bool ce_enable, bool energy_enable, bool cfo_enable) {
         ssize_t total_bytes=slot_burst->size()*num_bytes_per_slot;

@@ -41,6 +41,10 @@ namespace helix {
         /** @brief Noise power for the slot. */
         double                    noise_pow;
 
+        std::vector<uint8_t>      num_iterations;
+
+        double                    ldpc_latency;
+
         /**
          * @brief Constructor for the slot_str structure.  Initializes the data and channel estimation vectors with the specified sizes.
          *
@@ -99,6 +103,8 @@ namespace helix {
          */
         void receive(std::vector<slot_str>* slot_burst, ssize_t num_bytes, bool ce_enable, bool energy_enable, bool cfo_enable);
 
+        void receive(slot_str* slot, ssize_t num_bytes, bool iter_enable, bool latency_enable, uint8_t num_ldpc_blocks);
+
         /**
          * @brief Loads SSB (Synchronization Signal Block) data to the FPGA.
          *
@@ -154,6 +160,8 @@ namespace helix {
          * @param cfo_enable    Enable CFO metadata reception.
          */
         void unpack_metadata(slot_str* slot,bool ce_enable, bool energy_enable, bool cfo_enable);
+
+        void unpack_metadata_hw_accel(slot_str* slot,bool iter_enable, bool latency_enable, uint8_t num_code_blocks);
     };
 
 } // helix
