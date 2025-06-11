@@ -376,7 +376,10 @@ void radio_control::update_config_parameters(bool bw, int num_resource_elements,
     radio_config.equalization.scaling_nVar=value;
 
     //configure phase tracking block
-    radio_config.num_ptrs=ceil(static_cast<double>(radio_config.ofdm.N_RE/2.0))*(radio_config.ofdm.num_OFDM_syms-DMRS_SYM_LENGTH-SSB_BLOCK_NUM_SYMBOLS)+ceil((radio_config.ofdm.N_RE-SSB_BLOCK_RE-1)/2.0)*SSB_BLOCK_NUM_SYMBOLS;
+    uint8_t extra_ptrs = 0;
+    if ((radio_config.ofdm.N_RE) % 4 == 3) extra_ptrs = 4;
+
+    radio_config.num_ptrs=ceil(static_cast<double>(radio_config.ofdm.N_RE/2.0))*(radio_config.ofdm.num_OFDM_syms-DMRS_SYM_LENGTH-SSB_BLOCK_NUM_SYMBOLS)+ceil((radio_config.ofdm.N_RE-SSB_BLOCK_RE-1)/2.0)*SSB_BLOCK_NUM_SYMBOLS+extra_ptrs;
     radio_config.phase_tracking.offset=0;
     radio_config.phase_tracking.scs=SUBCARRIERS_PER_RE*2;
     radio_config.phase_tracking.even=false;
