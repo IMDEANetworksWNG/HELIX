@@ -55,10 +55,12 @@ int main() {
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     usleep(1000);
 
+    std::cout << "Configuring radio for --> Rate: " << std::to_string(mcs.codingRate) << " -- PRB: " << std::to_string(PRB)
+<< " -- Mod Order: " << std::to_string(mcs.modulationOrder) << std::endl;
     std::cout << "Starting experiment as Transmitter: " << std::endl;
 
     while(1){
         radio.stream->transmit(tx_data.data(),tx_data.size()*2);
-        usleep(50000); //10000 - 500
+        usleep(50); //10000 - 500
     }
 }

@@ -22,11 +22,12 @@ static int getTBSFromTable(int NdInfo) {
 }
 
 static int getTBS(const int mod_order,const int nPRB, const double R) {
-    // Number of codewords
-    int NREPerPRB=164;
+    // Number of codewords -> nRBSC*(length(n_syms)-numDMRSSymbols) + length(pdschre)*numDMRSSymbols
+    int NREPerPRB=164-ceil(240.0*4/nPRB);
 
     double NREPrime = double(NREPerPRB) - 6; //ptrs overhead
-    int NRE = std::min(156.0,NREPrime)*double(nPRB);
+    //int NRE = std::min(156.0,NREPrime)*double(nPRB);
+    int NRE = NREPrime*double(nPRB);
 
     int tbs=0;
 

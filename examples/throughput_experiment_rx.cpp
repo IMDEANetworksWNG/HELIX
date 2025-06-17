@@ -24,7 +24,7 @@ int main() {
     auto radio=helix::helix(fpga_ip);
 
     uint8_t rx_split=SPLIT_6;
-    MCSParameters mcs = getMCSParameters(MCS::MCS_12);
+    MCSParameters mcs = getMCSParameters(MCS::MCS_18);
     uint8_t PRB = 145;
 
     //set udp ifg and mss
@@ -49,16 +49,24 @@ int main() {
     int n_packets=10000;
     int n_recv_pkts=0;
 
+    std::cout << "Configuring radio for --> Rate: " << std::to_string(mcs.codingRate) << " -- PRB: " << std::to_string(PRB)
+<< " -- Mod Order: " << std::to_string(mcs.modulationOrder) << std::endl;
     std::cout << "Starting experiment as Receiver: " << std::endl;
 
     radio.control->enable_rx_radio(true);
 
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0;i<n_packets;i++){
-        radio.stream->receive(&rx_data,num_rx_bytes_slot,false, false,false);
+        radio.stream->receive(&rx_data,num_rx_bytes_slot,true, false,(uint8_t)radio.control->get_radio_config()->ldpc_code_blocks);
         if(!rx_data.data.empty()){
             n_recv_pkts++;
         }
+        else {
+            std::cerr <<"The receiver is overflowed or the link is not active.";
+            radio.control->enable_rx_radio(false);
+            return 1;
+        }
+
         rx_data.data.clear();
         rx_data.data.resize(num_rx_bytes_slot);
     }
