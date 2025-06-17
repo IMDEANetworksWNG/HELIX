@@ -5,6 +5,21 @@
 #include <vector>
 #include <cstdint>
 
+enum class MCS {
+    MCS_0, MCS_1, MCS_2, MCS_3, MCS_4, MCS_5, MCS_6, MCS_7,
+    MCS_8, MCS_9, MCS_10, MCS_11, MCS_12, MCS_13, MCS_14,
+    MCS_15, MCS_16, MCS_17, MCS_18, MCS_19, MCS_20, MCS_21,
+    MCS_22, MCS_23, MCS_24, MCS_25, MCS_26, MCS_27, MCS_28
+    // MCS_29, MCS_30, MCS_31 are reserved
+};
+
+struct MCSParameters {
+    int modulationOrder;   // Qm
+    float codingRate;      // TargetCodeRate / 1024
+};
+
+MCSParameters getMCSParameters(MCS mcs);
+
 /**
  * @brief Checks if two data buffers are identical. For validation purposes.
  *

@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cmath>
 #include "../include/defines.h"
+#include "unordered_map"
 
 
 bool check_data(uint8_t * received_data, uint8_t* sent_data, int num_bytes){
@@ -17,6 +18,47 @@ bool check_data(uint8_t * received_data, uint8_t* sent_data, int num_bytes){
     } else {
         //std::cout << "Data mismatch!" << std::endl;
         return false;
+    }
+}
+
+MCSParameters getMCSParameters(MCS mcs) {
+    static const std::unordered_map<MCS, MCSParameters> mcsTable = {
+        { MCS::MCS_0,  {2, 120  / 1024.0f} },
+        { MCS::MCS_1,  {2, 193  / 1024.0f} },
+        { MCS::MCS_2,  {2, 308  / 1024.0f} },
+        { MCS::MCS_3,  {2, 449  / 1024.0f} },
+        { MCS::MCS_4,  {2, 602  / 1024.0f} },
+        { MCS::MCS_5,  {4, 378  / 1024.0f} },
+        { MCS::MCS_6,  {4, 434  / 1024.0f} },
+        { MCS::MCS_7,  {4, 490  / 1024.0f} },
+        { MCS::MCS_8,  {4, 553  / 1024.0f} },
+        { MCS::MCS_9,  {4, 616  / 1024.0f} },
+        { MCS::MCS_10, {4, 658  / 1024.0f} },
+        { MCS::MCS_11, {6, 466  / 1024.0f} },
+        { MCS::MCS_12, {6, 517  / 1024.0f} },
+        { MCS::MCS_13, {6, 567  / 1024.0f} },
+        { MCS::MCS_14, {6, 616  / 1024.0f} },
+        { MCS::MCS_15, {6, 666  / 1024.0f} },
+        { MCS::MCS_16, {6, 719  / 1024.0f} },
+        { MCS::MCS_17, {6, 772  / 1024.0f} },
+        { MCS::MCS_18, {6, 822  / 1024.0f} },
+        { MCS::MCS_19, {6, 873  / 1024.0f} },
+        { MCS::MCS_20, {8, 682.5f / 1024.0f} },
+        { MCS::MCS_21, {8, 711   / 1024.0f} },
+        { MCS::MCS_22, {8, 754   / 1024.0f} },
+        { MCS::MCS_23, {8, 797   / 1024.0f} },
+        { MCS::MCS_24, {8, 841   / 1024.0f} },
+        { MCS::MCS_25, {8, 885   / 1024.0f} },
+        { MCS::MCS_26, {8, 916.5f / 1024.0f} },
+        { MCS::MCS_27, {8, 948   / 1024.0f} },
+        { MCS::MCS_28, {8, 948   / 1024.0f} } // Same as 27 per table
+    };
+
+    auto it = mcsTable.find(mcs);
+    if (it != mcsTable.end()) {
+        return it->second;
+    } else {
+        throw std::invalid_argument("Unsupported or reserved MCS value");
     }
 }
 

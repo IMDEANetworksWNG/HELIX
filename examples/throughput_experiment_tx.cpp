@@ -10,7 +10,7 @@
 
 
 const char* fpga_ip = "192.168.5.128";
-const std::string  experiments_folder = "matlab/";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -24,10 +24,9 @@ int main() {
     //initialize platform with IP
     auto radio = helix::helix(fpga_ip);
 
-    uint8_t tx_split = SPLIT_7_2;
-    uint8_t n_re = 145;
-    float rate = 490.0/1024;
-    uint8_t mod_order = MOD_QPSK;
+    uint8_t tx_split=SPLIT_6;
+    MCSParameters mcs = getMCSParameters(MCS::MCS_12);
+    uint8_t PRB = 145;
 
     //set radio ifg and mss
     helix::stream_str stream_config{};
@@ -40,10 +39,10 @@ int main() {
 
     //Configure the transmitter and receiver blocks and split functionalities
     radio.control->configure_radio(tx_split,tx_split, BW_MODE_HIGH,
-                                   n_re, mod_order, rate, 0);
+                                   PRB, mcs.modulationOrder, mcs.codingRate, 0);
 
     //load SSB in the block RAM
-    std::string ssb_filename = experiments_folder + "/TX_data/" +  get_waveform_filename(mod_order, n_re, rate, SSB_FILE);
+    std::string ssb_filename = experiments_folder + "/GEN_DATA/" +  get_waveform_filename(mcs.modulationOrder, PRB, mcs.codingRate, SSB_FILE);
     std::vector<int16_t> ssb = load_waveform_from_file(ssb_filename);
     radio.control->load_SSB(ssb);
 
@@ -52,7 +51,7 @@ int main() {
     radio.control->set_freq_band(conv_conf);
 
     //Load data to send
-    std::string filename = experiments_folder + "/TX_data/" + get_waveform_filename(mod_order, n_re, rate, tx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" +  get_waveform_filename(mcs.modulationOrder, PRB, mcs.codingRate, tx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
     usleep(1000);
 

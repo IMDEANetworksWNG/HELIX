@@ -10,6 +10,7 @@
 #include <bits/stdc++.h>
 const char* fpga_ip = "192.168.5.128"; // Replace with the actual server IP
 const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
+const std::string  subfolder = "/CAPTURED_DATA/HW_ACCEL/LDPC_ACCEL/DATA/";
 const std::vector<std::string> split_string = {"SPLIT6", "SPLIT7_3", "SPLIT7_2", "SPLIT7_2x", "SPLIT8"};
 
 std::vector<helix::converter_conf> create_conv_conf(){
@@ -57,9 +58,9 @@ int main() {
 
     uint8_t rx_split = LDPC_ACCEL;
     uint8_t tx_split = HW_ACCEL_TX;
-    uint8_t n_re = 145;
-    float rate = 921.0 / 1024;
-    uint8_t mod_order = MOD_64QAM;
+
+    MCSParameters mcs = getMCSParameters(MCS::MCS_26);
+    uint8_t PRB = 145;
 
     //set udp ifg and mss
     stream_config.udp_rx_mss = 1024 * 8;
@@ -67,16 +68,16 @@ int main() {
 
     radio.control->set_streaming_param(stream_config);
 
-    std::cout << "Configuring radio for --> Rate: " << std::to_string(rate) << " -- PRB: " << std::to_string(n_re)
- << " -- Mod Order: " << std::to_string(mod_order) << std::endl;
+    std::cout << "Configuring radio for --> Rate: " << std::to_string(mcs.codingRate) << " -- PRB: " << std::to_string(PRB)
+ << " -- Mod Order: " << std::to_string(mcs.modulationOrder) << std::endl;
 
     //Configure the transmitter and receiver blocks and split functionalities
     radio.control->configure_radio(rx_split, tx_split, BW_MODE_HIGH,
-                                   n_re, mod_order, rate, 0);
+                                   PRB, mcs.modulationOrder, mcs.codingRate, 0);
     auto radio_parameters = radio.control->get_radio_config();
 
     //Load data to send
-    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mod_order, n_re, rate, rx_split);
+    std::string filename = experiments_folder + "/GEN_DATA/" + get_waveform_filename(mcs.modulationOrder, PRB, mcs.codingRate, rx_split);
     std::vector<int16_t> tx_data = load_waveform_from_file(filename);
 
     uint32_t num_of_rx_bytes = radio.control->get_num_of_rx_bytes(SPLIT_6);
@@ -85,7 +86,7 @@ int main() {
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);
 
-    int n_packets = 1000;
+    int n_packets = 10000;
     std::vector<double> latency;
     std::vector<double> latency_fpga;
     std::vector<std::vector<uint8_t>> num_ldpc_iterations(n_packets, std::vector<uint8_t>(radio_parameters->ldpc_code_blocks));

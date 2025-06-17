@@ -21,7 +21,7 @@ namespace helix {
 
         ssize_t recv_bytes=udp->metadata_socket.recv(data,num_bytes);
         if(recv_bytes<num_bytes)
-                STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+                STREAM_DEBUG_PRINT("STREAMER_DEBUG(side-info): Less bytes received than expected: %zd\n", recv_bytes);
 
         if (ce_enable){
             slot->channel_estimation.assign(data,data+ce_size);
@@ -52,10 +52,12 @@ namespace helix {
 
         ssize_t recv_bytes=udp->metadata_socket.recv(data,num_bytes);
         if(recv_bytes<num_bytes)
-            STREAM_DEBUG_PRINT("STREAMER_DEBUG: Less bytes received than expected: %zd\n", recv_bytes);
+            STREAM_DEBUG_PRINT("STREAMER_DEBUG(side-info): Less bytes received than expected: %zd\n", recv_bytes);
 
         if (iter_enable){
             for (int i =0; i < num_code_blocks; i++) {
+                if (!(data[0] & 0b10000000))
+                    STREAM_DEBUG_PRINT("STREAMER_DEBUG(side-info): Slot was not decoded correctly\n");
                 slot->num_iterations.push_back(data[0] & 0b01111111);
                 data+=8;
             }

@@ -9,7 +9,7 @@
 #include <cmath>
 
 const char* fpga_ip = "192.168.5.128";
-const std::string  experiments_folder = "matlab/";
+const std::string  experiments_folder = "/mnt/NAS/Rafael/MOBISYS25/Matlab/";
 
 std::vector<helix::converter_conf> create_conv_conf(){
     return  {{400,RFDC_DAC_TYPE,0,0,true},
@@ -24,6 +24,8 @@ int main() {
     auto radio=helix::helix(fpga_ip);
 
     uint8_t rx_split=SPLIT_6;
+    MCSParameters mcs = getMCSParameters(MCS::MCS_12);
+    uint8_t PRB = 145;
 
     //set udp ifg and mss
     helix::stream_str stream_config{};
@@ -33,7 +35,7 @@ int main() {
 
     //Configure the transmitter and receiver blocks and split functionalities
     radio.control->configure_radio(rx_split,rx_split, BW_MODE_HIGH,
-                                   145, MOD_QPSK, 490.0/1024, 0);
+                                   PRB, mcs.modulationOrder, mcs.codingRate, 0);
 
     //Set the frequency bands of the different converters
     std::vector<helix::converter_conf> conv_conf=create_conv_conf();
@@ -44,25 +46,12 @@ int main() {
     auto* radio_config=radio.control->get_radio_config();
     helix::slot_str rx_data(num_rx_bytes_slot,radio_config->ofdm.num_sc*4);
 
-    int n_packets=10;
+    int n_packets=10000;
     int n_recv_pkts=0;
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
 
-    while(1){
-        radio.stream->receive(&rx_data,num_rx_bytes_slot,false,false,false);
-        if(!rx_data.data.empty()) {
-            std::cout << "Packet received. Number of bytes " << rx_data.data.size() << std::endl;
-            rx_data.data.clear();
-            rx_data.data.resize(num_rx_bytes_slot);
-            break;
-        }
-        usleep(100);
-        rx_data.data.resize(num_rx_bytes_slot);
-        for (int i = 0; i < 1; ++i) {
-            rx_data.data.resize(num_rx_bytes_slot);
-        }
-    }
+    radio.control->enable_rx_radio(true);
 
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0;i<n_packets;i++){
