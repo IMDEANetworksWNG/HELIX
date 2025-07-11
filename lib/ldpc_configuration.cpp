@@ -432,7 +432,7 @@ ldpc_info get_LDPC_config(int tbs, float TargetCodeRate, int nLLRs, int modOrder
         }
 
         if ((rF1[ii] + rL2[ii] < (ldpc_config.ssr + lastE[ii])) && (jump2[ii] == 1)) {
-            jump1[ii] = 0;
+            jump2[ii] = 0;
             ldpc_config.regs.KdOffset[ii]=ldpc_config.regs.KdOffset[ii]+1;
         }
     }

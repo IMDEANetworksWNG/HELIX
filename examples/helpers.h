@@ -17,7 +17,7 @@ struct MCSParameters {
     int modulationOrder;   // Qm
     float codingRate;      // TargetCodeRate / 1024
 };
-
+/** This function is extracting the parameters from Table index 2 of the standard **/
 MCSParameters getMCSParameters(MCS mcs);
 
 /**
