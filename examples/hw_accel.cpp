@@ -18,32 +18,19 @@ std::vector<helix::converter_conf> create_conv_conf(){
              {-400,RFDC_ADC_TYPE,2,0,true}};
 }
 
-// Shared data and mutex
-helix::slot_str shared_rx_data(0, 0); // Properly initialize sizes
-std::mutex rx_data_mutex;
-
 void receiver_thread(helix::slot_str& rx_data, int num_of_rx_bytes, helix::helix& radio) {
     radio.stream->receive(&rx_data, num_of_rx_bytes, true, true, (uint8_t)radio.control->get_radio_config()->ldpc_code_blocks);
-
-    // Protect access to shared_rx_data with a mutex
-    std::lock_guard<std::mutex> lock(rx_data_mutex);
-    shared_rx_data = std::move(rx_data); // Move data to shared data structure
-    //std::cout << "Receiver Thread: Received data (size): " << shared_rx_data.data.size() << "\n"; // Output size to check data is sent to the share data
 }
 
+
 void accel_data(helix::slot_str& rx_data, int num_of_rx_bytes, std::vector<int16_t>& tx_data, helix::helix& radio) {
+    helix::slot_str temp_data(num_of_rx_bytes, 0);
 
-    helix::slot_str temp_data (num_of_rx_bytes,0);
-    // Launch the receiver thread.
     std::thread receiver(receiver_thread, std::ref(temp_data), num_of_rx_bytes, std::ref(radio));
-
-    // Transmitter (runs in the main thread)
     radio.stream->transmit(tx_data.data(), tx_data.size() * 2);
-
     receiver.join();
-    // Access the received data (protected by the mutex)
-    std::lock_guard<std::mutex> lock(rx_data_mutex);
-    rx_data = std::move(shared_rx_data); // Move data to local variable
+
+    rx_data = std::move(temp_data);
 }
 
 
@@ -86,7 +73,7 @@ int main() {
     std::cout << "Starting experiment as hw accelerator: " << std::endl;
     radio.control->enable_rx_radio(true);
 
-    int n_packets = 10000;
+    int n_packets = 10;
     std::vector<double> latency;
     std::vector<double> latency_fpga;
     std::vector<std::vector<uint8_t>> num_ldpc_iterations(n_packets, std::vector<uint8_t>(radio_parameters->ldpc_code_blocks));
