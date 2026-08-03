@@ -49,6 +49,8 @@ int main() {
 
     std::cout << "Starting experiment as Receiver: " << std::endl;
 
+    radio.control->enable_rx_radio(true);
+
     while(1){
         radio.stream->receive(&rx_data,num_rx_bytes_slot,false,false,false);
         if(!rx_data.data.empty()) {
