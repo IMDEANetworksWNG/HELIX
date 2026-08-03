@@ -50,10 +50,12 @@ HELIX is publicly offered under the GNU General Public License version 3 (GPLv3)
 2.  **RF Front End Connections:**
     *   Connect the RF front ends to the appropriate RFSoC AD/DA converter ports using SMA cables. 
     * For this implementation the AD/DA mapping port is the following:
-      * DAC -> tile228: channel 0 for I and channel 1 for Q.
-      * ADC -> tile226: channel 0 for I and channel 1 for Q.
-    * Refer to ZCU208 documentation for physical locations. Take into account that ZCU208 has differential outputs.
-
+      * DAC
+         * tile228-CH0 in JHC2 for I
+         * tile228-CH2 in JHC2 for Q.
+      * ADC
+         * tile226-CH0 in JHC7 for I
+         * tile226-CH2 in JHC7 for Q.
 
 <img src="figures/eval_setup.png" alt="drawing" width="600"/>
 
